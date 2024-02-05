@@ -1,1 +1,1 @@
-javac -d bin src/jp/knowlsat/lstm/*.java
+javac -d bin src/jp/knowlsat/lstm/predict/*.java src/jp/knowlsat/lstm/*.java
