@@ -1,4 +1,4 @@
-package jp.knowlsat.lstm;
+package jp.knowlsat.lstm.predict;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -10,18 +10,42 @@ public class LSTM_Load {
     public static DataInputStream dis;
 
     public static int load(LSTM lstm) {
-        openFile();
+        if (openFile(lstm) != 0) {
+            return -1;
+        }
 
-        loadHiddenLayer(lstm.hiddenLayer[0], dis);
-        loadOutputLayer(lstm.outputLayer, dis);
+        if (loadHiddenLayer(lstm.hiddenLayer[0], dis) != 0) {
+            return -2;
+        }
 
-        closeFile();
+        if (loadOutputLayer(lstm.outputLayer, dis) != 0) {
+            return -3;
+        }
+
+        if (closeFile() != 0) {
+            return -4;
+        }
 
         return 0;
     }
 
-    public static int openFile() {
-		String fileName = "lstm.save";
+    public static int openFile(LSTM lstm) {
+        String mode_str = "_";
+        String ammonia_mode_str = "_";
+
+        if (lstm.ammonia_mode != 0) {
+            ammonia_mode_str += "Ammonia";
+        } else {
+            ammonia_mode_str += "NoAmmonia";
+        }
+
+        if (lstm.test_mode != -1) {
+            mode_str += m(lstm.test_mode);
+        } else {
+            mode_str += "all";
+        }
+
+		String fileName = "lstm" + ammonia_mode_str + mode_str + ".save";
 
         Path filePath = Path.of("setting", fileName);
 		File file = filePath.toFile();
@@ -30,7 +54,7 @@ public class LSTM_Load {
             fis = new FileInputStream(file);
             dis = new DataInputStream(fis);
         } catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println("Failed to open file. " + e.getMessage());
             return -1;
 		}
 
@@ -47,7 +71,7 @@ public class LSTM_Load {
                 fis.close();
             }
         } catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println("Failed to close file. " + e.getMessage());
             return -1;
 		}
 
@@ -90,7 +114,7 @@ public class LSTM_Load {
                 hiddenLayer.Wco[i] = dis.readDouble();
             }
         } catch (Exception e) {
-            System.out.println("Failed to read. " + e.getMessage());
+            System.out.println("Failed to read hidden layer. " + e.getMessage());
             return -1;
         }
 
@@ -110,11 +134,15 @@ public class LSTM_Load {
                 outputLayer.W[i] = dis.readDouble();
             }
         } catch (Exception e) {
-            System.out.println("Failed to read. " + e.getMessage());
+            System.out.println("Failed to read output layer. " + e.getMessage());
             return -1;
         }
 
         return 0;
     }
+
+	public static String m(int d) {
+		return String.format("%02d", d);
+	}
 
 }

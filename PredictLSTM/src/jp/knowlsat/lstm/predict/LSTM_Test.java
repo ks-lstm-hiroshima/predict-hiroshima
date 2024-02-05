@@ -1,4 +1,4 @@
-package jp.knowlsat.lstm;
+package jp.knowlsat.lstm.predict;
 
 public class LSTM_Test {
 	public static double mse_min = Double.MAX_VALUE;

@@ -1,4 +1,4 @@
-package jp.knowlsat.lstm;
+package jp.knowlsat.lstm.predict;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,8 +33,7 @@ public class DataSetting {
 	public double[][][] y_target;
 	public double[][][] z_target;
 
-	@SuppressWarnings("unused")
-	public DataSetting(int inputSize, int outputSize, int trainRealSize, int testRealSize, int window, int mode,
+	public DataSetting(int inputSize, int outputSize, int trainRealSize, int testRealSize, int window, int test_mode,
 			double KSPP, int ammonia_mode)
 			throws IOException {
 
@@ -44,12 +43,12 @@ public class DataSetting {
 		this.windowSize = window;
 
 		// minutes difference column
-		int minDiffCol = switch (mode) {
+		int minDiffCol = switch (test_mode) {
 			case -1 -> 5;
 			case 0 -> 6;
 			case 30 -> 7;
 			default -> {
-				throw new IllegalArgumentException("不正な値：mode = " + mode);
+				throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
 			}
 		};
 		List<Integer> colIndexes;
@@ -72,12 +71,12 @@ public class DataSetting {
 		// mode が　0 なら　カラム2のフラグが"0" のレコードのみ読み込む
 		// mode が　30 なら　カラム2のフラグが"30" のレコードのみ読み込む
 		// 上記の設定を colToFlagValsList に設定して DataTimeSeries クラスの dp.get()に引数として渡して 読み込みレコードを制御する。
-		List<ColToFlagVals> colToFlagValsList = switch (mode) {
+		List<ColToFlagVals> colToFlagValsList = switch (test_mode) {
 			case -1 -> List.of();
 			case 0 -> List.of(new ColToFlagVals(2, List.of("0")));
 			case 30 -> List.of(new ColToFlagVals(2, List.of("30")));
 			default -> {
-				throw new IllegalArgumentException("不正な値：mode = " + mode);
+				throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
 				}
 		};
 
