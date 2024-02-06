@@ -1,4 +1,4 @@
-package jp.knowlsat.lstm;
+package jp.knowlsat.lstm.predict;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,49 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-//public class PrintResult {
-//	FileWriter fileWriter;
-//	String filePath;
-//
-//	public PrintResult(String filePath) {
-//		File file = new File(filePath);
-//		this.filePath = filePath;
-//
-//		try {
-//			fileWriter = new FileWriter(file);
-//		} catch (Exception e) {
-//		}
-//	}
-//
-//	public void w(String test) {
-//		try {
-//			fileWriter.write(test);
-//			fileWriter.flush();
-//		} catch (Exception e) {
-//		}
-//	}
-//
-//	public void wl(String test) {
-//		try {
-//			fileWriter.write(test);
-//			fileWriter.write("\n");
-//			fileWriter.flush();
-//		} catch (Exception e) {
-//		}
-//	}
-//
-//	public void delete() {
-//		File file = new File(filePath);
-//
-//		try {
-//			fileWriter.close();
-//			file.delete();
-//		} catch (Exception e) {
-//		}
-//	}
-//
-//}
 
 public class PrintResult {
 	private static Path logDirPath = null;
@@ -200,14 +157,10 @@ public class PrintResult {
 }
 
 class PrintResultBuffer {
-//	private StringBuilder buffer;
 	private StringBuffer buffer;
 	private Path filePath;
 	
-	// testRealSize * 300
-	
 	public PrintResultBuffer(Path filePath, int capacity) {
-//		this.buffer = new StringBuilder(capacity);
 		this.buffer = new StringBuffer(capacity);
 		this.filePath = filePath;
 	}
