@@ -1,4 +1,4 @@
-package jp.knowlsat.lstm;
+package jp.knowlsat.lstm.predict;
 
 public class LSTM_OutputLayer {
 	public int nHidden;
@@ -33,7 +33,6 @@ public class LSTM_OutputLayer {
 	public static int on_err;
 	public static int on_max;
 
-	@SuppressWarnings("static-access")
 	public void test(double[] x, double[] t, int index, PrintResultBuffer prb, boolean z_flag, double stateThreshold, String z_datetime, String z_coDatetime) {
 		double[] p = new double[nOut];
 
