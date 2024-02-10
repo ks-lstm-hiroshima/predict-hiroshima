@@ -11,9 +11,6 @@ public class DataSetting {
 	public int outputSize;
 	public int dataTypeSize;
 	public int targetDataTypeSize;
-	public int trainSize;
-	public int validationSize;
-	public int testRealSize;
 	public int windowSize;
 	public int nakajiaIndexInTargets;
 	public int[] targetIndexes;
@@ -26,20 +23,12 @@ public class DataSetting {
 	public String[][] coDatetimesWT;
 
 	public double[][] data;
-	public double[][][] x_train;
-	public double[][][] y_train;
-	public double[][][] z_train;
-	public double[][][] x_target;
-	public double[][][] y_target;
-	public double[][][] z_target;
 
-	public DataSetting(int inputSize, int outputSize, int trainRealSize, int testRealSize, int window, int test_mode,
-			double KSPP, int ammonia_mode)
+	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode)
 			throws IOException {
 
 		this.inputSize = inputSize;
 		this.outputSize = outputSize;
-		this.testRealSize = testRealSize;
 		this.windowSize = window;
 
 		// minutes difference column
@@ -101,18 +90,6 @@ public class DataSetting {
 		List<Integer> targetArrayIndexes = dp.getTargetArrayIndexes();
 		List<Integer> timeArrayIndexes = dp.getTimeArrayIndexes();
 
-		this.trainSize = trainRealSize;
-		this.validationSize = this.allDataSize_window - this.testRealSize - this.trainSize - 1;
-
-		System.out.println("総データ種 = " + this.dataTypeSize);
-		System.out.println("総データ数 = " + this.allDataSize);
-		System.out.println("トレインデータ種 = " + this.dataTypeSize);
-		System.out.println("トレインデータ数 = " + this.trainSize);
-		System.out.println("バリデーションデータ種 = " + this.targetDataTypeSize);
-		System.out.println("バリデーションデータ数 = " + this.validationSize);
-		System.out.println("テストデータ種 = " + this.targetDataTypeSize);
-		System.out.println("テストデータ数 = " + this.testRealSize);
-
 		int numOfParam = dataList.size();
 
 		this.data = new double[numOfParam][];
@@ -136,12 +113,7 @@ public class DataSetting {
 		}
 		
 		this.targetIndexes = targetArrayIndexes.stream().mapToInt(Integer::intValue).toArray();
-
-		System.out.println("TargetIndex = " + targetArrayIndexes.get(this.nakajiaIndexInTargets) );
-		System.out.print("TargetIndexes = ");
-		targetArrayIndexes.stream().map(i -> i.toString() + "  ").forEach(System.out::print);
-		System.out.println();
-
+		
 		this.allDataW = new double[this.allDataSize_window - 1][this.windowSize][this.dataTypeSize];
 		this.allDataWT = new double[this.allDataSize_window - 1][this.windowSize][this.targetDataTypeSize];
 		this.datetimesWT = new String[this.allDataSize_window - 1][this.windowSize];
@@ -182,14 +154,6 @@ public class DataSetting {
 
 	public int getDataTypeSize() {
 		return this.dataTypeSize;
-	}
-
-	public int getTrainSize() {
-		return this.trainSize;
-	}
-
-	public int getValidationSize() {
-		return this.validationSize;
 	}
 }
 
