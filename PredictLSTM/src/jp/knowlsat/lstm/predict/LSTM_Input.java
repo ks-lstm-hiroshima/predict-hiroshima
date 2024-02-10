@@ -85,11 +85,11 @@ public class LSTM_Input {
 
 		Calendar cl_prev = Calendar.getInstance();
 		cl_prev.setTime(prev_date);
-		int offset = -WindowSize;
-		cl.add(Calendar.HOUR, offset);
+		int offset = 1 - WindowSize;
+		cl_prev.add(Calendar.HOUR, offset);
 		load(lstm_date_prev.getLstmDate(cl_prev), offset);
 
-		for (int i = offset + 1; i < 0; i++) {
+		for (int i = offset + 1; i <= 0; i++) {
 			cl_prev.add(Calendar.HOUR, 1);
 			load(lstm_date_prev.getLstmDate(cl_prev), i);
 		}
@@ -100,6 +100,7 @@ public class LSTM_Input {
 	public int load(LSTM_Date date, int offset) {
         String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
 		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute + "_";
+		System.out.println(startFiles);
 
 		ArrayList<File> csvFiles = new ArrayList<File>();
 		File dir = new File(input_path_str);
@@ -115,17 +116,18 @@ public class LSTM_Input {
 			}
 	
 			int fileIndex = -1;
-			Long minDate = 99991231235959L;
+			Long maxDate = 19700101000000L;
 			int len_ext = 4;
 			int len_yyyyMMddHHmmss = 14;
 	
 			for (int i = 0; i < csvFiles.size(); i++) {
-				int length = csvFiles.get(i).toString().length();
-				String fileDate = csvFiles.get(i).toString().substring(length - (len_yyyyMMddHHmmss + len_ext), length - len_ext);
-				Long num_date = Long.parseLong(fileDate);
+				String fileName = csvFiles.get(i).toString();
+				int length = fileName.length();
+				String fileOutputDate = fileName.substring(length - (len_yyyyMMddHHmmss + len_ext), length - len_ext);
+				Long num_date = Long.parseLong(fileOutputDate);
 	
-				if (num_date < minDate) {
-					minDate = num_date;
+				if (fileName.startsWith(startFiles) && num_date > maxDate) {
+					maxDate = num_date;
 					fileIndex = i;
 				}
 			}
@@ -148,8 +150,7 @@ public class LSTM_Input {
 					return -1;
 				}
 
-				int index = WindowSize - 1 + offset;
-				z_train[index + 1][targetIndex] = Double.parseDouble(items[0]); // 予測値(index + 1)を格納
+				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[0]); // 予測値を格納
 
 				try {
 					bufferedReader.close();
