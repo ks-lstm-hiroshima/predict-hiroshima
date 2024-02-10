@@ -25,10 +25,7 @@ public class LSTM_Input {
 	public String[] z_datetimes;
 	public String[] z_coDatetimes;
 	public boolean incident;
-
 	public LSTM_Date lstm_date;
-	public String input_path_str;
-	public Path input_path; 
 
 	public LSTM_Input(int WindowSize, int DataType, int nOut, int targetIndex, String minute) {
 		this.WindowSize = WindowSize;
@@ -72,22 +69,36 @@ public class LSTM_Input {
 			return -1;
 		}
 
-		int offset = 1 - WindowSize;
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(date);
-		cl.add(Calendar.HOUR, offset);
-		load(lstm_date.getLstmDate(cl), offset);
+		cl.add(Calendar.HOUR, -1);
+		LSTM_Date lstm_date_prev = lstm_date.getLstmDate(cl);
+		String prev_strDate = lstm_date_prev.year + "/" + lstm_date_prev.month + "/" + lstm_date_prev.day + " " + lstm_date_prev.hour + ":" + lstm_date_prev.minute + ":00";
+		Date prev_date;
 
-		for (int i = offset + 1; i <= 0; i++) {
-			cl.add(Calendar.HOUR, 1);
-			load(lstm_date.getLstmDate(cl), i);
+		try {
+			prev_date = sdFormat.parse(prev_strDate);
+		} catch (Exception e) {
+			System.out.println("Failed to convert date:[" + prev_strDate + "]. " + e.getMessage());
+			return -2;
+		}
+
+		Calendar cl_prev = Calendar.getInstance();
+		cl_prev.setTime(prev_date);
+		int offset = -WindowSize;
+		cl.add(Calendar.HOUR, offset);
+		load(lstm_date_prev.getLstmDate(cl_prev), offset);
+
+		for (int i = offset + 1; i < 0; i++) {
+			cl_prev.add(Calendar.HOUR, 1);
+			load(lstm_date_prev.getLstmDate(cl_prev), i);
 		}
 
 		return 0;
 	}
 
 	public int load(LSTM_Date date, int offset) {
-        this.input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
+        String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
 		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute + "_";
 
 		ArrayList<File> csvFiles = new ArrayList<File>();
@@ -120,7 +131,7 @@ public class LSTM_Input {
 			}
 	
 			if (fileIndex != -1) {
-				input_path = Path.of(csvFiles.get(fileIndex).toString());
+				Path input_path = Path.of(csvFiles.get(fileIndex).toString());
 				File file = input_path.toFile();
 				FileReader fileReader;
 				BufferedReader bufferedReader;
@@ -136,9 +147,10 @@ public class LSTM_Input {
 					System.out.println("Failed to open file. " + e.getMessage());
 					return -1;
 				}
-	
-				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[0]);
-	
+
+				int index = WindowSize - 1 + offset;
+				z_train[index + 1][targetIndex] = Double.parseDouble(items[0]); // 予測値(index + 1)を格納
+
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
