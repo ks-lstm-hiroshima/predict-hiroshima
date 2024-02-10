@@ -77,17 +77,17 @@ public class LSTM_Input {
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(date);
 		cl.add(Calendar.HOUR, offset);
-		load(lstm_date.getLstmDate(cl));
+		load(lstm_date.getLstmDate(cl), offset);
 
-		for (int i = offset; i < 0; i++) {
+		for (int i = offset; i <= 0; i++) {
 			cl.add(Calendar.HOUR, 1);
-			load(lstm_date.getLstmDate(cl));
+			load(lstm_date.getLstmDate(cl), offset);
 		}
 
 		return 0;
 	}
 
-	public int load(LSTM_Date date) {
+	public int load(LSTM_Date date, int offset) {
         this.input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
 		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute + "_";
 
@@ -138,7 +138,7 @@ public class LSTM_Input {
 					return -1;
 				}
 	
-				z_train[WindowSize - 1][targetIndex] = Double.parseDouble(items[0]);
+				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[0]);
 	
 				try {
 					bufferedReader.close();
