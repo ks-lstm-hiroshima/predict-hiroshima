@@ -52,10 +52,10 @@ public class LSTM_Input {
 		this.z_coDatetimes = z_coDatetimes;
 		this.incident = incident;
 
-        String year = z_coDatetimes[WindowSize - 1].substring(0, 4);
-        String month = z_coDatetimes[WindowSize - 1].substring(5, 7);
-        String day = z_coDatetimes[WindowSize - 1].substring(8, 10);
-        String hour = z_coDatetimes[WindowSize - 1].substring(11, 13);
+		String year = z_coDatetimes[WindowSize - 1].substring(0, 4);
+		String month = z_coDatetimes[WindowSize - 1].substring(5, 7);
+		String day = z_coDatetimes[WindowSize - 1].substring(8, 10);
+		String hour = z_coDatetimes[WindowSize - 1].substring(11, 13);
 		lstm_date = new LSTM_Date(year, month, day, hour, minute);
 
 		return 0;
@@ -137,9 +137,9 @@ public class LSTM_Input {
 					System.out.println("Failed to open file. " + e.getMessage());
 					return -1;
 				}
-	
+
 				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[0]);
-	
+
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
