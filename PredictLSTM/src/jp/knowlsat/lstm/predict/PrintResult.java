@@ -140,7 +140,7 @@ public class PrintResult {
 			}
 		}
 	}
-	
+
 	public void writeAll(CharSequence str) {
 		try {
 			Files.writeString(this.filePath, str, StandardCharsets.UTF_8);
@@ -159,7 +159,7 @@ public class PrintResult {
 class PrintResultBuffer {
 	private StringBuffer buffer;
 	private Path filePath;
-	
+
 	public PrintResultBuffer(Path filePath, int capacity) {
 		this.buffer = new StringBuffer(capacity);
 		this.filePath = filePath;
@@ -168,12 +168,12 @@ class PrintResultBuffer {
 	public void w(String test) {
 		buffer.append(test);
 	}
-	
+
 	public void wl(String test) {
 		buffer.append(test);
 		buffer.append("\n");
 	}
-	
+
 	public void writeToFile() {
 		PrintResult newPr = new PrintResult(this.filePath);
 		newPr.writeAll(this.buffer);

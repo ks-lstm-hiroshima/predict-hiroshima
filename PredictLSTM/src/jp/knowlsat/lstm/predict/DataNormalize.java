@@ -15,11 +15,11 @@ import java.util.List;
 // cosinで正規化を行う CoslNormalizeクラスがこのクラスを継承。
 public class DataNormalize {
 	private double[] data;
-	
+
 	protected void set_data(double[] data) {
 		this.data = data;
 	}
-	
+
 	public double[] get() {
 		return this.data;
 	}
@@ -30,7 +30,7 @@ public class DataNormalize {
 // [0, 1]、[-1, 0]、[-1, 1]　三通りの正規化方法があるが、実際の処理は委譲
 class NormalNormalize extends DataNormalize {
 	private Normalizer normalizer;	
-	
+
 	public NormalNormalize(List<Double> array) {
 		Double max = Collections.max(array);
 		Double min = Collections.min(array);
@@ -45,11 +45,11 @@ class NormalNormalize extends DataNormalize {
 		double[] data = normalizer.normalize(array);
 		super.set_data( data );
 	}
-	
+
 	public double inv(double x) {
 		return this.normalizer.inv(x);
 	}
-	
+
 }
 
 
@@ -65,18 +65,18 @@ class PlusNormalizer extends Normalizer{
 	private final double EPS = 1.0E-12;
 	private double epsDiv;
 	private double min;
-	
+
 	PlusNormalizer(double max, double min){
 		this.epsDiv = max - min + EPS;
 		this.min = min;
 	}
-	
-	
+
+
 	@Override
 	public double[] normalize( List<Double> array) {
 		return array.stream().mapToDouble(elem -> ((elem - min) / epsDiv)).toArray();
 	}
-	
+
 	@Override
 	public double inv(double x) {
 		return (x * epsDiv + min);
@@ -89,17 +89,17 @@ class MinusNormalizer extends Normalizer{
 	private final double EPS = 1.0E-12;
 	private double epsDiv;
 	private double max;
-	
+
 	MinusNormalizer(double max, double min){
 		this.epsDiv = max - min + EPS;
 		this.max = max;
 	}
-	
+
 	@Override
 	public double[] normalize( List<Double> array) {
 		return array.stream().mapToDouble(elem -> ((elem - max) / epsDiv)).toArray();
 	}
-	
+
 	@Override
 	public double inv(double x) {
 		return (x * epsDiv + max);
@@ -112,21 +112,21 @@ class PlusMinusNormalizer extends Normalizer{
 	private final double EPS = 1.0E-12;
 	private double epsDiv;
 	private double min;
-	
+
 	PlusMinusNormalizer(double max, double min){
 		this.epsDiv = (max - min + EPS) * 0.5;
 		this.min = min;
 	}
-	
+
 	public double[] normalize( List<Double> array) {
 		return array.stream().mapToDouble(elem -> ((elem - min) / epsDiv - 1.0)).toArray();
 	}
-	
+
 	@Override
 	public double inv(double x) {
 		return x * epsDiv;
 	}
-	
+
 }
 
 

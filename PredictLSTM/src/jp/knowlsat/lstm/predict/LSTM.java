@@ -38,7 +38,7 @@ public class LSTM {
 	}
 
 	public LSTM(int Layers, int window, int nIn, int nHidden, int nOut, int targetIndex, int peephole_mode, int elu_mode, double STATE_THRESHOLD,
-		DataSetting ds, int testRealSize, int test_mode, int ammonia_mode, String minute) {
+			DataSetting ds, int testRealSize, int test_mode, int ammonia_mode, String minute) {
 		this.Layers = Layers;
 		this.window = window;
 		this.hiddenLayer = new LSTM_HiddenLayer[Layers];
@@ -122,7 +122,7 @@ public class LSTM {
 
 		int test_size = 1; // not changed
 		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
-			peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
+				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
 		LSTM_Load.load(lstm);
 		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets], minute);
 

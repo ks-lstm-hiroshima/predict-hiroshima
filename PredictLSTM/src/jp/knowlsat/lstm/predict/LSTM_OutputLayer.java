@@ -20,7 +20,7 @@ public class LSTM_OutputLayer {
 	}
 
 	public LSTM_Output test(double[] x, double[] t, boolean z_flag, double stateThreshold, String z_datetime, String z_coDatetime,
-		boolean incident, String time_mode, double[][] input) {
+			boolean incident, String time_mode, double[][] input) {
 		double[] p = new double[nOut];
 
 		for (int j = 0; j < nOut; j++) {
@@ -87,8 +87,8 @@ public class LSTM_OutputLayer {
 		PredictSquaredError2 = e2 * e2;
 
 		LSTM_Output output = new LSTM_Output(z_coDatetime, z_datetime, onJudge, z_flag, inv_p, inv_t,
-        	e, PredictSquaredError, per, e2, PredictSquaredError2, per2,
-			next, incident, time_mode, input[input.length - 1]);
+				e, PredictSquaredError, per, e2, PredictSquaredError2, per2,
+				next, incident, time_mode, input[input.length - 1]);
 
 		return output;
 	}

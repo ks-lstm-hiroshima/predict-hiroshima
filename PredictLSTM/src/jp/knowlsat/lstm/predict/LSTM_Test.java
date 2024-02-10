@@ -25,8 +25,8 @@ public class LSTM_Test {
 		}
 
 		LSTM_Output output = lstm.outputLayer.test(out[lstm.Layers - 1][lstm.window - 1], lstm.z_target[lstm.window - 1],
-			lstm.z_flag[lstm.window - 1], lstm.STATE_THRESHOLD, lstm.z_datetimes[lstm.window - 1], lstm.z_coDatetimes[lstm.window - 1],
-			lstm.incident, lstm.minute, lstm.z_train);
+				lstm.z_flag[lstm.window - 1], lstm.STATE_THRESHOLD, lstm.z_datetimes[lstm.window - 1], lstm.z_coDatetimes[lstm.window - 1],
+				lstm.incident, lstm.minute, lstm.z_train);
 
 		output.print();
 		output.outputInputCSV();

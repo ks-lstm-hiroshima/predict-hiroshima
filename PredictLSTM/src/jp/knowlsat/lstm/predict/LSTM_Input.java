@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class LSTM_Input {
-    public static final String INPUT_PATH = "output\\input";
+	public static final String INPUT_PATH = "output\\input";
 
 	public int WindowSize;
 	public int DataType;
@@ -98,7 +98,7 @@ public class LSTM_Input {
 	}
 
 	public int load(LSTM_Date date, int offset) {
-        String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
+		String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
 		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute + "_";
 		System.out.println(startFiles);
 
@@ -109,40 +109,40 @@ public class LSTM_Input {
 		if (files != null) {
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
-	
+
 				if (file.toString().startsWith(startFiles)){
 					csvFiles.add(file);
 				}
 			}
-	
+
 			int fileIndex = -1;
 			Long maxDate = 19700101000000L;
 			int len_ext = 4;
 			int len_yyyyMMddHHmmss = 14;
-	
+
 			for (int i = 0; i < csvFiles.size(); i++) {
 				String fileName = csvFiles.get(i).toString();
 				int length = fileName.length();
 				String fileOutputDate = fileName.substring(length - (len_yyyyMMddHHmmss + len_ext), length - len_ext);
 				Long num_date = Long.parseLong(fileOutputDate);
-	
+
 				if (fileName.startsWith(startFiles) && num_date > maxDate) {
 					maxDate = num_date;
 					fileIndex = i;
 				}
 			}
-	
+
 			if (fileIndex != -1) {
 				Path input_path = Path.of(csvFiles.get(fileIndex).toString());
 				File file = input_path.toFile();
 				FileReader fileReader;
 				BufferedReader bufferedReader;
 				String[] items;
-	
+
 				try {
 					fileReader = new FileReader(file);
 					bufferedReader = new BufferedReader(fileReader);
-	
+
 					bufferedReader.readLine();
 					items = bufferedReader.readLine().split(",");
 				} catch (IOException e) {

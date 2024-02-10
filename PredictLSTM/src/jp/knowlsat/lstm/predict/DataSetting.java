@@ -37,11 +37,11 @@ public class DataSetting {
 			case 0 -> 6;
 			case 30 -> 7;
 			default -> {
-				throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
+			throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
 			}
 		};
 		List<Integer> colIndexes;
-		
+
 		if (ammonia_mode == 1) {
 			colIndexes = List.of(4, minDiffCol, 8, 10, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
 		} else {
@@ -53,7 +53,7 @@ public class DataSetting {
 		List<Integer> timeColIndexes = List.of(25, 26);
 		int datetimeColIndex = 0;
 		int coDatetimeColIndex = 1;
-		
+
 		this.nakajiaIndexInTargets = targetColIndexes.indexOf(nakajiaColIndex);
 
 		// mode が -1 なら すべての入力データを読み込む。
@@ -66,18 +66,18 @@ public class DataSetting {
 			case 30 -> List.of(new ColToFlagVals(2, List.of("30")));
 			default -> {
 				throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
-				}
+			}
 		};
 
 		List<ChangeParamValByFlag> changeParamValByFlagList = List.of(
 				// index 9 が "0" なら　index 15 を KSPP に変更する、ただし KSPP が 0.0 以上の時だけ。
 				new ChangeParamValByFlag(9, "0", 15, KSPP, x -> x >= 0.0) // KSPP値をホワイトノイズ（KS秘伝の味）として付与
-		);
+				);
 
 		DataTimeSeries dp = new DataTimeSeries(
 				"data/MIN30_ver2.1.0__20180301_0000__20230903_2330.csv",
 				colIndexes, targetColIndexes, timeColIndexes, colToFlagValsList, changeParamValByFlagList, datetimeColIndex, coDatetimeColIndex);
-		
+
 		ArrayList<ArrayList<Double>> dataList = dp.getData();
 		String[] datetimes = dp.getDatetimes();
 		String[] coDatetimes = dp.getCoDatetimes();
@@ -93,7 +93,7 @@ public class DataSetting {
 		int numOfParam = dataList.size();
 
 		this.data = new double[numOfParam][];
-		
+
 		this.targetDnList = new ArrayList<>( targetArrayIndexes.size() );		
 
 		for (int i = 0; i < numOfParam; i++) {
@@ -111,9 +111,9 @@ public class DataSetting {
 			}
 			this.data[i] = dn.get();
 		}
-		
+
 		this.targetIndexes = targetArrayIndexes.stream().mapToInt(Integer::intValue).toArray();
-		
+
 		this.allDataW = new double[this.allDataSize_window - 1][this.windowSize][this.dataTypeSize];
 		this.allDataWT = new double[this.allDataSize_window - 1][this.windowSize][this.targetDataTypeSize];
 		this.datetimesWT = new String[this.allDataSize_window - 1][this.windowSize];
@@ -142,14 +142,14 @@ public class DataSetting {
 
 			index++;
 		}
-		
+
 		for (int iTime = 1; iTime < this.allDataSize_window; iTime++) {
 			for (int w = 0; w < this.windowSize; w++) {
 				this.datetimesWT[iTime - 1][w] = datetimes[iTime + w];
 				this.coDatetimesWT[iTime - 1][w] = coDatetimes[iTime + w];
 			}
 		}
-		
+
 	}
 
 	public int getDataTypeSize() {
