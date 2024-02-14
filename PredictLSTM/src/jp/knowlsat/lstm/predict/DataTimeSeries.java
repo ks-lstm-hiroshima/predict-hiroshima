@@ -23,9 +23,8 @@ public class DataTimeSeries {
 	private String[] coDatetimes;
 
 	public DataTimeSeries(String path, List<Integer> colIndexes, List<Integer> targetColIndexes,
-			List<Integer> timeColIndexes,
-			List<ColToFlagVals> colToFlagValsList, List<ChangeParamValByFlag> changeVal, int datetimeColIndex, int coDatetimeColIndex)
-			throws IOException {
+			List<Integer> timeColIndexes, List<ColToFlagVals> colToFlagValsList, List<ChangeParamValByFlag> changeVal,
+			int datetimeColIndex, int coDatetimeColIndex) throws IOException {
 
 		// ファイル中で使用するデータの最大カラムインデックス
 		int maxIndex = Collections.max(colIndexes);
@@ -138,7 +137,7 @@ public class DataTimeSeries {
 	public String[] getDatetimes() {
 		return this.datetimes;
 	}
-	
+
 	public String[] getCoDatetimes(){
 		return this.coDatetimes;
 	}
