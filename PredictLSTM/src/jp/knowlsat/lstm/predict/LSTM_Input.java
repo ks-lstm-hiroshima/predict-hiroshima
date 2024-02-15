@@ -71,7 +71,7 @@ public class LSTM_Input {
 
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(date);
-		cl.add(Calendar.HOUR, -1);
+		cl.add(Calendar.HOUR_OF_DAY, -1);
 		LSTM_Date lstm_date_prev = lstm_date.getLstmDate(cl);
 		String prev_strDate = lstm_date_prev.year + "/" + lstm_date_prev.month + "/" + lstm_date_prev.day + " " + lstm_date_prev.hour + ":" + lstm_date_prev.minute + ":00";
 		Date prev_date;
@@ -86,11 +86,11 @@ public class LSTM_Input {
 		Calendar cl_prev = Calendar.getInstance();
 		cl_prev.setTime(prev_date);
 		int offset = 1 - WindowSize;
-		cl_prev.add(Calendar.HOUR, offset);
+		cl_prev.add(Calendar.HOUR_OF_DAY, offset);
 		load(lstm_date_prev.getLstmDate(cl_prev), offset);
 
 		for (int i = offset + 1; i <= 0; i++) {
-			cl_prev.add(Calendar.HOUR, 1);
+			cl_prev.add(Calendar.HOUR_OF_DAY, 1);
 			load(lstm_date_prev.getLstmDate(cl_prev), i);
 		}
 
@@ -100,7 +100,6 @@ public class LSTM_Input {
 	public int load(LSTM_Date date, int offset) {
 		String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
 		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute + "_";
-		System.out.println(startFiles);
 
 		ArrayList<File> csvFiles = new ArrayList<File>();
 		File dir = new File(input_path_str);
