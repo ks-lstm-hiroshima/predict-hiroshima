@@ -26,3 +26,8 @@ replay_pid*
 # Pleades Project Files
 .metadata/*
 Servers/*
+
+# Files what created by Eclipse
+PredictLSTM/.classpath
+PredictLSTM/.gitignore
+PredictLSTM/.project
