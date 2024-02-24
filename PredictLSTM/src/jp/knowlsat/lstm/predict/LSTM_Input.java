@@ -41,7 +41,8 @@ public class LSTM_Input {
 		z_coDatetimes = new String[WindowSize];
 	}
 
-	public int set(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes, String[] z_coDatetimes, boolean incident) {
+	public int set(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
+			String[] z_coDatetimes, boolean incident) {
 		this.z_train = z_train;
 		this.z_target = z_target;
 		this.z_flag = z_flag;
@@ -58,7 +59,8 @@ public class LSTM_Input {
 	}
 
 	public int allLoad() {
-		String strDate = lstm_date.year + "/" + lstm_date.month + "/" + lstm_date.day + " " + lstm_date.hour + ":" + lstm_date.minute + ":00";
+		String strDate = lstm_date.year + "/" + lstm_date.month + "/" + lstm_date.day + " " + lstm_date.hour + ":"
+				+ lstm_date.minute + ":00";
 		SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date;
 
@@ -73,7 +75,8 @@ public class LSTM_Input {
 		cl.setTime(date);
 		cl.add(Calendar.HOUR_OF_DAY, -1);
 		LSTM_Date lstm_date_prev = lstm_date.getLstmDate(cl);
-		String prev_strDate = lstm_date_prev.year + "/" + lstm_date_prev.month + "/" + lstm_date_prev.day + " " + lstm_date_prev.hour + ":" + lstm_date_prev.minute + ":00";
+		String prev_strDate = lstm_date_prev.year + "/" + lstm_date_prev.month + "/" + lstm_date_prev.day + " "
+				+ lstm_date_prev.hour + ":" + lstm_date_prev.minute + ":00";
 		Date prev_date;
 
 		try {
@@ -99,7 +102,8 @@ public class LSTM_Input {
 
 	public int load(LSTM_Date date, int offset) {
 		String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
-		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute + "_";
+		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute
+				+ "_";
 
 		ArrayList<File> csvFiles = new ArrayList<File>();
 		File dir = new File(input_path_str);
@@ -109,7 +113,7 @@ public class LSTM_Input {
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
 
-				if (file.toString().startsWith(startFiles)){
+				if (file.toString().startsWith(startFiles)) {
 					csvFiles.add(file);
 				}
 			}
@@ -149,7 +153,7 @@ public class LSTM_Input {
 					return -1;
 				}
 
-				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[0]); // 予測値を格納
+				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 予測値を格納
 
 				try {
 					bufferedReader.close();

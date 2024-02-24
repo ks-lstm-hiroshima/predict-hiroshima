@@ -31,3 +31,4 @@ Servers/*
 PredictLSTM/.classpath
 PredictLSTM/.gitignore
 PredictLSTM/.project
+.project

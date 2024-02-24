@@ -38,9 +38,9 @@ public class LSTM_Output {
 	public Path input_path;
 	public Path statistics_path;
 
-	public LSTM_Output(String z_coDatetime, String z_datetime, boolean onJudge, boolean z_flag, double inv_p, double inv_t,
-			double e, double PredictSquaredError, double per, double e2, double PredictSquaredError2, double per2,
-			double next, boolean incident, String minute, double[] input) {
+	public LSTM_Output(String z_coDatetime, String z_datetime, boolean onJudge, boolean z_flag, double inv_p,
+			double inv_t, double e, double PredictSquaredError, double per, double e2, double PredictSquaredError2,
+			double per2, double next, boolean incident, String minute, double[] input) {
 		this.z_coDatetime = z_coDatetime;
 		this.z_datetime = z_datetime;
 		this.onJudge = onJudge;
@@ -82,11 +82,15 @@ public class LSTM_Output {
 
 		LocalDateTime t_date = LocalDateTime.now();
 		DateTimeFormatter t_df = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-		input_path = Path.of(INPUT_PATH + "\\" + year + "\\" + month + "\\" + day, "I_" + year + month + day + hour + minute + "_" + t_df.format(t_date) + ".csv");
-		statistics_path = Path.of(STATISTICS_PATH + "\\" + year + "\\" + month + "\\" + day, "S_" + year + month + day + hour + minute + "_" + t_df.format(t_date) + ".csv");
+		input_path = Path.of(INPUT_PATH + "\\" + year + "\\" + month + "\\" + day,
+				"I_" + year + month + day + hour + minute + "_" + t_df.format(t_date) + ".csv");
+		statistics_path = Path.of(STATISTICS_PATH + "\\" + year + "\\" + month + "\\" + day,
+				"S_" + year + month + day + hour + minute + "_" + t_df.format(t_date) + ".csv");
 	}
 
 	public void print() {
+		System.out.print(z_coDatetime);
+		System.out.print(",");
 		System.out.print(inv_p);
 		System.out.print(",");
 		System.out.print(incident);
@@ -111,12 +115,16 @@ public class LSTM_Output {
 		}
 
 		try {
+			fileWriter.write("predictDate");
+			fileWriter.write(",");
 			fileWriter.write("next");
 			fileWriter.write(",");
 			fileWriter.write("onJudge");
 			fileWriter.write(",");
 			fileWriter.write("incident");
 			fileWriter.write("\n");
+			fileWriter.write(z_coDatetime);
+			fileWriter.write(",");
 			fileWriter.write(Double.toString(next));
 			fileWriter.write(",");
 			fileWriter.write(Boolean.toString(onJudge));
@@ -156,6 +164,8 @@ public class LSTM_Output {
 		}
 
 		try {
+			fileWriter.write("predictDate");
+			fileWriter.write(",");
 			fileWriter.write("inv_p");
 			fileWriter.write(",");
 			fileWriter.write("inv_t");
@@ -173,6 +183,8 @@ public class LSTM_Output {
 			fileWriter.write("incident");
 			fileWriter.write("\n");
 
+			fileWriter.write(z_coDatetime);
+			fileWriter.write(",");
 			fileWriter.write(Double.toString(inv_p));
 			fileWriter.write(",");
 			fileWriter.write(Double.toString(inv_t));
