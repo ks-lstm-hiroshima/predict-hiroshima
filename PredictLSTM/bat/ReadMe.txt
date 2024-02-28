@@ -1,7 +1,8 @@
-各batファイルの5行目にあるPredictLSTMのインストール先のパスを適宜変更すること
+システム環境変数に下記の設定を行うこと
 
-set TestDir="C:\AllFiles\AI_Workspace\PredictLSTM"
+-----
+環境変数名：PredictLSTM_DIR
+値：＜PredictLSTMのインストール先のパス＞
+-----
 
-↓
-
-set TestDir="＜PredictLSTMをインストールした場所＞"
+（例）値　→　C:\AllFiles\AI_Workspace\PredictLSTM
