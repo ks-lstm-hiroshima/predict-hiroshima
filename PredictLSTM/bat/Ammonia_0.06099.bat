@@ -1,10 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
-cd %~dp0
 
-cd %PredictLSTM_DIR%
+set BatDIR=%cd%
+cd %BatDIR%\..
+
 set PER=0.3
-echo %PER% > %PredictLSTM_DIR%\setting\setting_per_Ammonia.txt
+echo %PER% > setting\setting_per_Ammonia.txt
 
 @echo Ammonia:%PER%
 
