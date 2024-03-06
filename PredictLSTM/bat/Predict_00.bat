@@ -1,10 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
-cd %~dp0
 
+set BatDIR=%cd%
+cd %BatDIR%\..
 set Target=jp.knowlsat.lstm.LSTM_Ammonia_00
-cd %PredictLSTM_DIR%
-javac -d %PredictLSTM_DIR%\bin %PredictLSTM_DIR%\src/jp/knowlsat/lstm/predict/*.java %PredictLSTM_DIR%\src/jp/knowlsat/lstm/*.java
-java -cp %PredictLSTM_DIR%\bin %Target%
+
+javac -d bin src/jp/knowlsat/lstm/predict/*.java src/jp/knowlsat/lstm/*.java
+java -cp bin %Target%
 
 timeout /t 1500 > nul
