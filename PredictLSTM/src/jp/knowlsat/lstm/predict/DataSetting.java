@@ -3,6 +3,7 @@ package jp.knowlsat.lstm.predict;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -102,7 +103,8 @@ public class DataSetting {
 
 		this.data = new double[numOfParam][];
 
-		this.targetDnList = new ArrayList<>( targetArrayIndexes.size() );		
+		this.targetDnList = new ArrayList<>( targetArrayIndexes.size() );
+		HashMap<Integer,DataNormalize> colDnMap = new HashMap<>( colIndexes.size() + 1, 1.0f);
 
 		for (int i = 0; i < numOfParam; i++) {
 			DataNormalize dn;
@@ -118,6 +120,7 @@ public class DataSetting {
 				dn = (DataNormalize) nn;
 			}
 			this.data[i] = dn.get();
+			colDnMap.put(Integer.valueOf(i), dn);
 		}
 
 		this.targetIndexes = targetArrayIndexes.stream().mapToInt(Integer::intValue).toArray();
@@ -158,7 +161,7 @@ public class DataSetting {
 			}
 		}
 
-		RealDataSetting rds = new RealDataSetting();
+		RealDataSetting rds = new RealDataSetting(colIndexes, timeColIndexes, colDnMap);
 
 		this.predictDataSize = rds.getPredictDataSize();
 		this.predictDataSize_window = rds.getPredictDataSize_window();
@@ -246,9 +249,29 @@ class RealDataSetting{
 	private String[][] predictDatetimesWT;
 	private String[][] predictCoDatetimesWT;
 	
-	RealDataSetting(){
-		
-		
+	private HashMap<Integer,DataNormalize> colDnMap;
+	private final HashMap<Integer,Integer> learningDataColToCol;
+	{
+		learningDataColToCol = new HashMap<>();
+		learningDataColToCol.put(Integer.valueOf(8),  Integer.valueOf(3));
+		learningDataColToCol.put(Integer.valueOf(11), Integer.valueOf(14));
+		learningDataColToCol.put(Integer.valueOf(12), Integer.valueOf(14));
+		learningDataColToCol.put(Integer.valueOf(13), Integer.valueOf(14));
+		learningDataColToCol.put(Integer.valueOf(14), Integer.valueOf(27));
+		learningDataColToCol.put(Integer.valueOf(15), Integer.valueOf(33));
+		learningDataColToCol.put(Integer.valueOf(16), Integer.valueOf(40));
+		learningDataColToCol.put(Integer.valueOf(17), Integer.valueOf(45));
+		learningDataColToCol.put(Integer.valueOf(18), Integer.valueOf(46));
+		learningDataColToCol.put(Integer.valueOf(19), Integer.valueOf(47));
+		learningDataColToCol.put(Integer.valueOf(20), Integer.valueOf(48));
+		learningDataColToCol.put(Integer.valueOf(21), Integer.valueOf(49));
+		learningDataColToCol.put(Integer.valueOf(22), Integer.valueOf(50));
+		learningDataColToCol.put(Integer.valueOf(23), Integer.valueOf(51));
+		learningDataColToCol.put(Integer.valueOf(24), Integer.valueOf(63));
+	}
+	
+	RealDataSetting(List<Integer> colIndexes, List<Integer> timeColIndexes, HashMap<Integer,DataNormalize> colDnMap){
+		this.colDnMap = colDnMap;
 	}
 	
 	int getPredictDataSize(){
