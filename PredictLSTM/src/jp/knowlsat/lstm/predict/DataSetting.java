@@ -21,10 +21,18 @@ public class DataSetting {
 	public double[][][] allDataWT;
 	public String[][] datetimesWT;
 	public String[][] coDatetimesWT;
+	
+	public int predictDataSize;
+	public int predictDataSize_window;
+	public double[][][] predictDataW;
+	public double[][][] predictDataWT;
+	public String[][] predictDatetimesWT;
+	public String[][] predictCoDatetimesWT;
+	
 
 	public double[][] data;
 
-	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode, int recNumForTest, ArrayList<String[]> rTimeRecs)
+	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode, int dataNumForTest, ArrayList<String[]> rTimeRecs)
 			throws IOException {
 
 		this.inputSize = inputSize;
@@ -150,6 +158,16 @@ public class DataSetting {
 			}
 		}
 
+		RealDataSetting rds = new RealDataSetting();
+
+		this.predictDataSize = rds.getPredictDataSize();
+		this.predictDataSize_window = rds.getPredictDataSize_window();
+		this.predictDataW = rds.getPredictDataW();
+		this.predictDataWT = rds.getPredictDataWT();
+		this.predictDatetimesWT = rds.getPredictDatetimesWT();
+		this.predictCoDatetimesWT = rds.getPredictCoDatetimesWT();
+		
+
 	}
 
 	public int getDataTypeSize() {
@@ -218,3 +236,43 @@ class ChangeParamValByFlag {
 interface JugeChange {
 	boolean isChange(double value);
 }
+
+
+class RealDataSetting{
+	private int predictDataSize;
+	private int predictDataSize_window;
+	private double[][][] predictDataW;
+	private double[][][] predictDataWT;
+	private String[][] predictDatetimesWT;
+	private String[][] predictCoDatetimesWT;
+	
+	RealDataSetting(){
+		
+		
+	}
+	
+	int getPredictDataSize(){
+		return this.predictDataSize;
+	}
+
+	int getPredictDataSize_window(){
+		return this.predictDataSize_window;
+	}
+	
+	double[][][] getPredictDataW(){
+		return this.predictDataW;
+	}
+	
+	double[][][] getPredictDataWT(){
+		return this.predictDataWT;
+	}
+	
+	String[][] getPredictDatetimesWT(){
+		return this.predictDatetimesWT;
+	}
+	
+	String[][] getPredictCoDatetimesWT(){
+		return this.predictCoDatetimesWT;
+	}
+}
+
