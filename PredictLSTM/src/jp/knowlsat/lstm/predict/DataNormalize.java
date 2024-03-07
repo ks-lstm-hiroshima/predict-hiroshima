@@ -29,11 +29,15 @@ public class DataNormalize {
 // DataNormalize を継承
 // [0, 1]、[-1, 0]、[-1, 1]　三通りの正規化方法があるが、実際の処理は委譲
 class NormalNormalize extends DataNormalize {
-	private Normalizer normalizer;	
+	private Normalizer normalizer;
+	private Double oMax;
+	private Double oMin;
 
 	public NormalNormalize(List<Double> array) {
 		Double max = Collections.max(array);
 		Double min = Collections.min(array);
+		this.oMax = max;
+		this.oMin = min;
 
 		if (min >= 0.0) { // [0, 1]
 			this.normalizer = new PlusNormalizer(max,min);
@@ -50,6 +54,12 @@ class NormalNormalize extends DataNormalize {
 		return this.normalizer.inv(x);
 	}
 
+	public boolean isNormalRange(Double val) {
+		if( val.compareTo(this.oMax) <= 0 && val.compareTo(this.oMin) >= 0 ) {
+			return true;
+		}
+		return false;
+	}
 }
 
 
