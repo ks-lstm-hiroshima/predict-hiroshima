@@ -24,7 +24,7 @@ public class DataSetting {
 
 	public double[][] data;
 
-	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode)
+	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode, int recNumForTest, ArrayList<String[]> rTimeRecs)
 			throws IOException {
 
 		this.inputSize = inputSize;

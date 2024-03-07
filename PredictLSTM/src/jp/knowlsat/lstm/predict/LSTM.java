@@ -3,6 +3,7 @@ package jp.knowlsat.lstm.predict;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 public class LSTM {
@@ -106,9 +107,16 @@ public class LSTM {
 		int test_mode = Integer.parseInt(settings.getProperty("test_mode"));
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
 
+		
+		int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
+		int test_size = 1; // not changed
+		int recNumForTest = passed + test_size;
+		
+		ArrayList<String[]> rTimeRecs = null;
+		
 		DataSetting ds = null;
 		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode);
+			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, recNumForTest, rTimeRecs);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
@@ -120,7 +128,7 @@ public class LSTM {
 		int peephole_mode = Integer.parseInt(settings.getProperty("peephole_mode"));
 		int elu_mode = Integer.parseInt(settings.getProperty("elu_mode"));
 
-		int test_size = 1; // not changed
+		// int test_size = 1; // not changed
 		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
 				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
 		LSTM_Load.load(lstm);
@@ -128,7 +136,7 @@ public class LSTM {
 
 		// -- predict start --
 		// int passed = windowSize; // windowSize時刻前から現在までのデータを用いて再予測（障害などの理由により過去X時刻から再予測する場合）
-		int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
+		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
 
 		for (int test_index = passed; test_index > 0; test_index--) {
 			/* 下記をリアルタイム前処理データに差し替える */
