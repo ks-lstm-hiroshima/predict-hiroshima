@@ -110,13 +110,13 @@ public class LSTM {
 		
 		int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
 		int test_size = 1; // not changed
-		int recNumForTest = passed + test_size;
+		int dataNumForTest = passed + test_size;
 		
 		ArrayList<String[]> rTimeRecs = null;
 		
 		DataSetting ds = null;
 		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, recNumForTest, rTimeRecs);
+			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest, rTimeRecs);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
