@@ -1,6 +1,9 @@
 package jp.knowlsat.lstm.predict;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -161,7 +164,7 @@ public class DataSetting {
 			}
 		}
 
-		RealDataSetting rds = new RealDataSetting(colIndexes, timeColIndexes, colDnMap);
+		RealDataSetting rds = new RealDataSetting(rTimeRecs, test_mode, colIndexes, timeColIndexes, datetimeColIndex, colDnMap);
 
 		this.predictDataSize = rds.getPredictDataSize();
 		this.predictDataSize_window = rds.getPredictDataSize_window();
@@ -253,6 +256,7 @@ class RealDataSetting{
 	private final HashMap<Integer,Integer> learningDataColToCol;
 	{
 		learningDataColToCol = new HashMap<>();
+		learningDataColToCol.put(Integer.valueOf(0),  Integer.valueOf(0));
 		learningDataColToCol.put(Integer.valueOf(8),  Integer.valueOf(3));
 		learningDataColToCol.put(Integer.valueOf(11), Integer.valueOf(14));
 		learningDataColToCol.put(Integer.valueOf(12), Integer.valueOf(14));
@@ -270,8 +274,30 @@ class RealDataSetting{
 		learningDataColToCol.put(Integer.valueOf(24), Integer.valueOf(63));
 	}
 	
-	RealDataSetting(List<Integer> colIndexes, List<Integer> timeColIndexes, HashMap<Integer,DataNormalize> colDnMap){
+	RealDataSetting(ArrayList<String[]> rTimeRecs, int test_mode, List<Integer> colIndexes, List<Integer> timeColIndexes, int datetimeColIndex, HashMap<Integer,DataNormalize> colDnMap){
 		this.colDnMap = colDnMap;
+		
+		int dtColIndex = this.learningDataColToCol.get(Integer.valueOf(datetimeColIndex));
+		
+		int previousRecIndex = 0;
+		String dtStr;
+		ParseDateTime parsedDT = null;
+		for( ;previousRecIndex < rTimeRecs.size(); previousRecIndex++) {
+			dtStr = rTimeRecs.get(previousRecIndex) [dtColIndex];
+			parsedDT = new ParseDateTime(dtStr);
+			if(parsedDT.minutes == test_mode) { // テストモード　-1（30分間隔モデル）の時にこのコードは正常に機能しない
+				break;
+			}
+		}
+		if( previousRecIndex >= rTimeRecs.size()) {
+			System.out.println("前の定刻レコードが見つかりませんでした。");
+			System.out.println("previousRecIndex = " + previousRecIndex);
+			System.exit(-999);
+		}
+		
+		System.out.print( test_mode + "分モデル予測モード前の予測点は :  ");
+		System.out.print(parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG)));
+		
 	}
 	
 	int getPredictDataSize(){
@@ -297,5 +323,67 @@ class RealDataSetting{
 	String[][] getPredictCoDatetimesWT(){
 		return this.predictCoDatetimesWT;
 	}
+}
+
+
+class ParseDateTime{
+	int year;
+	int month;
+	int day;
+	int hour;
+	int minutes;
+	int second;
+	String sYear;
+	String sMonth;
+	String sDay;
+	String sHour;
+	String sMinutes;
+	String sSecond;
+	LocalDateTime datetime; 
+	
+	ParseDateTime(String datetime){
+		String[] datetimeParts = this.sepDT(datetime);
+		String date = datetimeParts[0];
+		String time = datetimeParts[1];
+		
+		String[] dateParts = this.sepD01(date);
+		this.sYear = dateParts[0];
+		this.sMonth = dateParts[1];
+		this.sDay = dateParts[2];
+		
+		String[] timeParts = this.sepT(time);
+		this.sHour = timeParts[0];
+		this.sMinutes = timeParts[1];
+		this.sSecond = timeParts[2];
+		
+		this.year = Integer.parseInt(this.sYear);
+		this.month = Integer.parseInt(this.sMonth);
+		this.day = Integer.parseInt(this.sDay);
+		this.hour = Integer.parseInt(this.sHour);
+		this.minutes = Integer.parseInt(this.sMinutes);
+		this.second = Integer.parseInt(this.sSecond);
+		
+		this.datetime = LocalDateTime.of(this.year, this.month, this.day, this.hour, this.minutes, this.second);
+	}
+	
+	private String[] sepDT(String datetime) {
+		String[] datetimeParts = datetime.split(" ");
+		return datetimeParts;
+	}
+	
+	private String[] sepD01(String date) {
+		String[] dateParts = date.split("-");
+		return dateParts;
+	}
+	
+	private String[] sepD02(String date) {
+		String[] dateParts = date.split("/");
+		return dateParts;
+	}
+	
+	private String[] sepT(String time) {
+		String[] timeParts = time.split(":");
+		return timeParts;
+	}	
 }
 
