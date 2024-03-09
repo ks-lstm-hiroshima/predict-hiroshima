@@ -59,6 +59,28 @@ public class LSTM {
 	}
 
 	public static void main(String[] args) {
+		String networkFileName = "setting/setting_network.properties";
+		FileInputStream nin = null;
+		try {
+			nin = new FileInputStream(networkFileName);
+		} catch (FileNotFoundException e) {
+			System.out.println(e.toString());
+			System.exit(-1);
+		}
+
+		Properties network_settings = new Properties();
+
+		try {
+			network_settings.load(nin);
+		} catch (IOException e) {
+			System.out.println(e.toString());
+			System.exit(-1);
+		}
+
+		String network_path = network_settings.getProperty("RealtimePath_MIN01");
+		DataRealtimeCSV csv = new DataRealtimeCSV(network_path);
+		csv.setListCSV();
+
 		String fileName = "setting/setting_";
 		String minute = "";
 
@@ -112,8 +134,7 @@ public class LSTM {
 		int test_size = 1; // not changed
 		int dataNumForTest = passed + test_size;
 		
-		ArrayList<String[]> rTimeRecs = null;
-		
+		ArrayList<String[]> rTimeRecs = csv.getListCSV();		
 		DataSetting ds = null;
 		try {
 			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest, rTimeRecs);
