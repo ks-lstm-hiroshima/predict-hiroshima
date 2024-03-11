@@ -292,11 +292,12 @@ class RealDataSetting{
 		if( previousRecIndex >= rTimeRecs.size()) {
 			System.out.println("前の定刻レコードが見つかりませんでした。");
 			System.out.println("previousRecIndex = " + previousRecIndex);
+			System.out.println("rTimeRecs.size() = " + rTimeRecs.size());
 			System.exit(-999);
 		}
 		
 		System.out.print( test_mode + "分モデル予測モード前の予測点は :  ");
-		System.out.print(parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG)));
+		System.out.println(parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 		
 	}
 	
