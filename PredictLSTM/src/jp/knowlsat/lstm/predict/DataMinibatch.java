@@ -58,7 +58,7 @@ public class DataMinibatch {
 
 		for (int i = 0; i < TestSize; i++) {
 			for (int w = 0; w < WindowSize; w++) {
-				if (ds.predictDataWT[ds.allDataSize_window - 1 - test_index + i][w][0] == 0.0) {
+				if (ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][0] == 0.0) {
 					z_flag[i][w] = false;
 				} else {
 					z_flag[i][w] = true;
