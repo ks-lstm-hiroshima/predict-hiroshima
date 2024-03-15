@@ -51,14 +51,14 @@ public class DataMinibatch {
 			for (int w = 0; w < WindowSize; w++) {
 				z_target[i][w][0] = ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][0];
 				z_target[i][w][1] = ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][1];
-				z_datetimes[i][w] = ds.datetimesWT[ds.predictDataSize_window - 1 - test_index + i][w];
-				z_coDatetimes[i][w] = ds.coDatetimesWT[ds.predictDataSize_window - 1 - test_index + i][w];
+				z_datetimes[i][w] = ds.predictDatetimesWT[ds.predictDataSize_window - 1 - test_index + i][w];
+				z_coDatetimes[i][w] = ds.predictCoDatetimesWT[ds.predictDataSize_window - 1 - test_index + i][w];
 			}
 		}
 
 		for (int i = 0; i < TestSize; i++) {
 			for (int w = 0; w < WindowSize; w++) {
-				if (ds.predictDataWT[ds.allDataSize_window - 1 - test_index + i][w][0] == 0.0) {
+				if (ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][0] == 0.0) {
 					z_flag[i][w] = false;
 				} else {
 					z_flag[i][w] = true;

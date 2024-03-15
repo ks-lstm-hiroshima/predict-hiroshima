@@ -171,7 +171,7 @@ class CoslNormalize extends DataNormalize {
 	
 	@Override
 	public double normalize(double val) {
-		return Math.cos(val);
+		return -Math.cos(val);
 	}
 }
 

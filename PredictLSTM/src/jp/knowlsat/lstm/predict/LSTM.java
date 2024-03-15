@@ -130,7 +130,8 @@ public class LSTM {
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
 
 		
-		int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
+		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
+		int passed = 0;
 		int test_size = 1; // not changed
 		int dataNumForTest = passed + test_size;
 		
@@ -159,7 +160,7 @@ public class LSTM {
 		// int passed = windowSize; // windowSize時刻前から現在までのデータを用いて再予測（障害などの理由により過去X時刻から再予測する場合）
 		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
 
-		for (int test_index = passed; test_index > 0; test_index--) {
+		for (int test_index = passed; test_index >= 0; test_index--) {
 			/* 下記をリアルタイム前処理データに差し替える */
 			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType, ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index);
 			input.set(dm.z_train[0], dm.z_target[0], dm.z_flag[0], dm.z_datetimes[0], dm.z_coDatetimes[0], false);
