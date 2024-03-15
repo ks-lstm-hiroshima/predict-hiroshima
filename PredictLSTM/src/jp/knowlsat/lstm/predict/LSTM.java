@@ -3,6 +3,7 @@ package jp.knowlsat.lstm.predict;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 public class LSTM {
@@ -58,6 +59,28 @@ public class LSTM {
 	}
 
 	public static void main(String[] args) {
+		String networkFileName = "setting/setting_network.properties";
+		FileInputStream nin = null;
+		try {
+			nin = new FileInputStream(networkFileName);
+		} catch (FileNotFoundException e) {
+			System.out.println(e.toString());
+			System.exit(-1);
+		}
+
+		Properties network_settings = new Properties();
+
+		try {
+			network_settings.load(nin);
+		} catch (IOException e) {
+			System.out.println(e.toString());
+			System.exit(-1);
+		}
+
+		String network_path = network_settings.getProperty("RealtimePath_MIN01");
+		DataRealtimeCSV csv = new DataRealtimeCSV(network_path);
+		csv.setListCSV();
+
 		String fileName = "setting/setting_";
 		String minute = "";
 
@@ -106,9 +129,16 @@ public class LSTM {
 		int test_mode = Integer.parseInt(settings.getProperty("test_mode"));
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
 
+		
+		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
+		int passed = 0;
+		int test_size = 1; // not changed
+		int dataNumForTest = passed + test_size;
+		
+		ArrayList<String[]> rTimeRecs = csv.getListCSV();		
 		DataSetting ds = null;
 		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode);
+			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest, rTimeRecs);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
@@ -120,7 +150,7 @@ public class LSTM {
 		int peephole_mode = Integer.parseInt(settings.getProperty("peephole_mode"));
 		int elu_mode = Integer.parseInt(settings.getProperty("elu_mode"));
 
-		int test_size = 1; // not changed
+		// int test_size = 1; // not changed
 		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
 				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
 		LSTM_Load.load(lstm);
@@ -128,9 +158,9 @@ public class LSTM {
 
 		// -- predict start --
 		// int passed = windowSize; // windowSize時刻前から現在までのデータを用いて再予測（障害などの理由により過去X時刻から再予測する場合）
-		int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
+		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
 
-		for (int test_index = passed; test_index > 0; test_index--) {
+		for (int test_index = passed; test_index >= 0; test_index--) {
 			/* 下記をリアルタイム前処理データに差し替える */
 			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType, ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index);
 			input.set(dm.z_train[0], dm.z_target[0], dm.z_flag[0], dm.z_datetimes[0], dm.z_coDatetimes[0], false);

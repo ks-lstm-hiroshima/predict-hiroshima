@@ -36,29 +36,29 @@ public class DataMinibatch {
 				}
 
 				for (int w = 0; w < WindowSize; w++) {
-					z_train[i][w][j] = ds.allDataW[ds.allDataSize_window - 1 - test_index + i][w][j];
+					z_train[i][w][j] = ds.predictDataW[ds.predictDataSize_window - 1 - test_index + i][w][j];
 				}
 			}
 		}
 
 		for (int i = 0; i < TestSize; i++) {
 			for (int w = 0; w < WindowSize - i; w++) {
-				z_train[i][w][target_index] = ds.allDataW[ds.allDataSize_window - 1 - test_index + i][w][target_index];
+				z_train[i][w][target_index] = ds.predictDataW[ds.predictDataSize_window - 1 - test_index + i][w][target_index];
 			}
 		}
 
 		for (int i = 0; i < TestSize; i++) {
 			for (int w = 0; w < WindowSize; w++) {
-				z_target[i][w][0] = ds.allDataWT[ds.allDataSize_window - 1 - test_index + i][w][0];
-				z_target[i][w][1] = ds.allDataWT[ds.allDataSize_window - 1 - test_index + i][w][1];
-				z_datetimes[i][w] = ds.datetimesWT[ds.allDataSize_window - 1 - test_index + i][w];
-				z_coDatetimes[i][w] = ds.coDatetimesWT[ds.allDataSize_window - 1 - test_index + i][w];
+				z_target[i][w][0] = ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][0];
+				z_target[i][w][1] = ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][1];
+				z_datetimes[i][w] = ds.predictDatetimesWT[ds.predictDataSize_window - 1 - test_index + i][w];
+				z_coDatetimes[i][w] = ds.predictCoDatetimesWT[ds.predictDataSize_window - 1 - test_index + i][w];
 			}
 		}
 
 		for (int i = 0; i < TestSize; i++) {
 			for (int w = 0; w < WindowSize; w++) {
-				if (ds.allDataWT[ds.allDataSize_window - 1 - test_index + i][w][0] == 0.0) {
+				if (ds.predictDataWT[ds.predictDataSize_window - 1 - test_index + i][w][0] == 0.0) {
 					z_flag[i][w] = false;
 				} else {
 					z_flag[i][w] = true;

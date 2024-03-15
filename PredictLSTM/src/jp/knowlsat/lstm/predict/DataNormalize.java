@@ -13,7 +13,7 @@ import java.util.List;
 // 正規化を行うクラスのスーパークラス
 // 現状Min-Max法での正規化を行う NormalNormalizeクラスと
 // cosinで正規化を行う CoslNormalizeクラスがこのクラスを継承。
-public class DataNormalize {
+abstract public class DataNormalize {
 	private double[] data;
 
 	protected void set_data(double[] data) {
@@ -23,17 +23,23 @@ public class DataNormalize {
 	public double[] get() {
 		return this.data;
 	}
+	
+	public abstract double normalize(double val);
 }
 
 // 通常の Min-Max 法による正規化を行うクラス。
 // DataNormalize を継承
 // [0, 1]、[-1, 0]、[-1, 1]　三通りの正規化方法があるが、実際の処理は委譲
 class NormalNormalize extends DataNormalize {
-	private Normalizer normalizer;	
+	private Normalizer normalizer;
+	private Double oMax;
+	private Double oMin;
 
 	public NormalNormalize(List<Double> array) {
 		Double max = Collections.max(array);
 		Double min = Collections.min(array);
+		this.oMax = max;
+		this.oMin = min;
 
 		if (min >= 0.0) { // [0, 1]
 			this.normalizer = new PlusNormalizer(max,min);
@@ -50,6 +56,17 @@ class NormalNormalize extends DataNormalize {
 		return this.normalizer.inv(x);
 	}
 
+	public boolean isNormalRange(Double val) {
+		if( val.compareTo(this.oMax) <= 0 && val.compareTo(this.oMin) >= 0 ) {
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public double normalize(double val) {
+		return normalizer.normalize(val);
+	}
 }
 
 
@@ -57,6 +74,7 @@ class NormalNormalize extends DataNormalize {
 abstract class Normalizer{
 	protected abstract double[] normalize( List<Double> array);
 	protected abstract double inv(double x);
+	protected abstract double normalize(double val);
 }
 
 
@@ -81,6 +99,11 @@ class PlusNormalizer extends Normalizer{
 	public double inv(double x) {
 		return (x * epsDiv + min);
 	}
+	
+	@Override
+	public double normalize(double val) {
+		return (val - min) / epsDiv;
+	}
 }
 
 
@@ -104,6 +127,11 @@ class MinusNormalizer extends Normalizer{
 	public double inv(double x) {
 		return (x * epsDiv + max);
 	}
+	
+	@Override
+	public double normalize(double val) {
+		return (val - max) / epsDiv;
+	}
 }
 
 
@@ -126,7 +154,11 @@ class PlusMinusNormalizer extends Normalizer{
 	public double inv(double x) {
 		return x * epsDiv;
 	}
-
+	
+	@Override
+	public double normalize(double val) {
+		return (val - min) / epsDiv - 1.0;
+	}
 }
 
 
@@ -135,6 +167,11 @@ class CoslNormalize extends DataNormalize {
 	public CoslNormalize(List<Double> array) {
 		double[] data = array.stream().mapToDouble(elem -> -Math.cos(elem)).toArray();
 		super.set_data(data);
+	}
+	
+	@Override
+	public double normalize(double val) {
+		return -Math.cos(val);
 	}
 }
 
