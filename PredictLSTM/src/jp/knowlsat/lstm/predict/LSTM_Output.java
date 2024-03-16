@@ -19,6 +19,11 @@ public class LSTM_Output {
 	public boolean incident; // インシデント
 	public String minute; // タイムモード
 	public double[] input; // 入力データ[dataType]
+	public double[] origin_input; // オリジナル入力データ[dataType]
+
+	public String prev_z_coDatetime; // 前回定刻日時
+	public double prev_inv_p; // 前回予測値
+	public boolean prev_incident; // 前回インシデント
 
 	public String year;
 	public String month;
@@ -40,7 +45,7 @@ public class LSTM_Output {
 
 	public LSTM_Output(String z_coDatetime, String z_datetime, boolean onJudge, boolean z_flag, double inv_p,
 			double inv_t, double e, double PredictSquaredError, double per, double e2, double PredictSquaredError2,
-			double per2, double next, boolean incident, String minute, double[] input) {
+			double per2, double next, boolean incident, String minute, double[] input, double[] origin_input) {
 		this.z_coDatetime = z_coDatetime;
 		this.inv_p = inv_p;
 		this.next = next;
@@ -48,6 +53,7 @@ public class LSTM_Output {
 		this.incident = incident;
 		this.minute = minute;
 		this.input = input;
+		this.origin_input = origin_input;
 
 		// this.z_datetime = z_datetime;
 		// this.inv_t = inv_t;
@@ -60,6 +66,12 @@ public class LSTM_Output {
 		// this.per2 = per2;
 
 		setInputPath();
+	}
+
+	public void setPrevResult(String prev_z_coDatetime, double prev_inv_p, boolean prev_incident) {
+		this.prev_z_coDatetime = prev_z_coDatetime;
+		this.prev_inv_p = prev_inv_p;
+		this.prev_incident = prev_incident;
 	}
 
 	public void setInputPath() {
@@ -89,11 +101,33 @@ public class LSTM_Output {
 	}
 
 	public void print() {
+		System.out.println("--- 今回実施の予測実行結果 ---");
+		System.out.print("予測時刻");
+		System.out.print(",");
+		System.out.print("中次亜塩素酸注入率予測値（正規化前）");
+		System.out.print(",");
+		System.out.print("インシデント発生フラグ（false：正常, true：異常）");
+		System.out.println();
 		System.out.print(z_coDatetime);
 		System.out.print(",");
 		System.out.print(inv_p);
 		System.out.print(",");
 		System.out.print(incident);
+		System.out.println();
+		System.out.println();
+
+		System.out.println("--- 前回実施の予測実行結果 ---");
+		System.out.print("予測時刻");
+		System.out.print(",");
+		System.out.print("中次亜塩素酸注入率予測値（正規化前）");
+		System.out.print(",");
+		System.out.print("インシデント発生フラグ（false：正常, true：異常）");
+		System.out.println();
+		System.out.print(prev_z_coDatetime);
+		System.out.print(",");
+		System.out.print(prev_inv_p);
+		System.out.print(",");
+		System.out.print(prev_incident);
 		System.out.println();
 	}
 
@@ -176,6 +210,11 @@ public class LSTM_Output {
 				fileWriter.write(",");
 			}
 
+			for (int i = 0; i < origin_input.length; i++) {
+				fileWriter.write("origin_input_" + Integer.toString(i));
+				fileWriter.write(",");
+			}
+
 			fileWriter.write("incident");
 			// fileWriter.write(",");
 			// fileWriter.write("inv_t");
@@ -204,6 +243,11 @@ public class LSTM_Output {
 
 			for (int i = 0; i < input.length; i++) {
 				fileWriter.write(Double.toString(input[i]));
+				fileWriter.write(",");
+			}
+
+			for (int i = 0; i < origin_input.length; i++) {
+				fileWriter.write(Double.toString(origin_input[i]));
 				fileWriter.write(",");
 			}
 

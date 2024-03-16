@@ -145,15 +145,18 @@ public class PrintResult {
 		try {
 			Files.writeString(this.filePath, str, StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			System.out.println("Failed to write a batch of strings to a file.. " + filePath.toString() + e.getMessage());
+			System.out
+					.println("Failed to write a batch of strings to a file.. " + filePath.toString() + e.getMessage());
 			e.printStackTrace();
 			try {
-				errWriter.write("Failed to write a batch of strings to a file. " + filePath.toString() + e.getMessage() + "\n");
+				errWriter.write(
+						"Failed to write a batch of strings to a file. " + filePath.toString() + e.getMessage() + "\n");
 			} catch (Exception ex) {
 				System.out.println("Failed to write to error log file. " + ex.getMessage());
 			}
 		}
 	}
+
 }
 
 class PrintResultBuffer {
@@ -178,4 +181,5 @@ class PrintResultBuffer {
 		PrintResult newPr = new PrintResult(this.filePath);
 		newPr.writeAll(this.buffer);
 	}
+
 }

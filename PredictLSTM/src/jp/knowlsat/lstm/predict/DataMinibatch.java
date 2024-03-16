@@ -16,7 +16,8 @@ public class DataMinibatch {
 	public String[][] z_datetimes;
 	public String[][] z_coDatetimes;
 
-	public DataMinibatch(DataSetting ds, int TestSize, int WindowSize, int DataType, int target_index, int nOut, int test_index) {
+	public DataMinibatch(DataSetting ds, int TestSize, int WindowSize, int DataType, int target_index, int nOut,
+			int test_index) {
 		this.ds = ds;
 		this.TestSize = TestSize;
 		this.WindowSize = WindowSize;
@@ -43,7 +44,8 @@ public class DataMinibatch {
 
 		for (int i = 0; i < TestSize; i++) {
 			for (int w = 0; w < WindowSize - i; w++) {
-				z_train[i][w][target_index] = ds.predictDataW[ds.predictDataSize_window - 1 - test_index + i][w][target_index];
+				z_train[i][w][target_index] = ds.predictDataW[ds.predictDataSize_window - 1 - test_index
+						+ i][w][target_index];
 			}
 		}
 
