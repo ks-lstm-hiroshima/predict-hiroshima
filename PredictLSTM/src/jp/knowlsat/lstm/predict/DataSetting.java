@@ -41,7 +41,7 @@ public class DataSetting {
 	public HashMap<Integer, DataNormalize> colDnMap;
 
 	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
-			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed)
+			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed, boolean debug)
 			throws IOException {
 
 		this.inputSize = inputSize;
@@ -171,7 +171,7 @@ public class DataSetting {
 		}
 
 		RealDataSetting rds = new RealDataSetting(rTimeRecs, test_mode, colIndexes, timeColIndexes, datetimeColIndex,
-				targetColIndexes, colDnMap, this.windowSize, dataNumForTest, passed);
+				targetColIndexes, colDnMap, this.windowSize, dataNumForTest, passed, debug);
 
 		this.predictDataSize = rds.getPredictDataSize();
 		this.predictDataSize_window = rds.getPredictDataSize_window();
@@ -290,7 +290,7 @@ class RealDataSetting {
 	RealDataSetting(ArrayList<String[]> rTimeRecs, int test_mode, List<Integer> colIndexes,
 			List<Integer> timeColIndexes, int datetimeColIndex, List<Integer> targetColIndexes,
 			HashMap<Integer, DataNormalize> colDnMap, int windowSize, int dataNumForTest,
-			int passed) {
+			int passed, boolean debug) {
 		this.colIndexes = colIndexes;
 		this.colDnMap = colDnMap;
 
@@ -314,15 +314,17 @@ class RealDataSetting {
 			nowDT = nowDT.minusHours(passed);
 		}
 
-		System.out.print("起動時刻は :  ");
-		System.out.println(nowDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-		System.out.println(nowDT.getNano() + "ナノ秒");
-		System.out.println(ParseDateTime.fTime(nowDT));
+		if (debug) {
+			System.out.print("起動時刻は :  ");
+			System.out.println(nowDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+			System.out.println(nowDT.getNano() + "ナノ秒");
+			System.out.println(ParseDateTime.fTime(nowDT));
 
-		// テストモード　-1（30分間隔モデル）の時にこのコードは正常に機能しない
-		System.out.print("予測時刻は :  ");
-		System.out.println(ParseDateTime.getNextDT(nowDT, test_mode)
-				.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+			// テストモード　-1（30分間隔モデル）の時にこのコードは正常に機能しない
+			System.out.print("予測時刻は :  ");
+			System.out.println(ParseDateTime.getNextDT(nowDT, test_mode)
+					.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+		}
 
 		LocalDateTime nextDT = ParseDateTime.getNextDT(nowDT, test_mode);
 
@@ -340,8 +342,11 @@ class RealDataSetting {
 			dtStr = rTimeRecs.get(previousRecIndex)[dtColIndex];
 			parsedDT = new ParseDateTime(dtStr);
 			if (parsedDT.le(curCoDT)) {
-				System.out.println(
-						"abc" + parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+				if (debug) {
+					System.out.println(
+							"abc" + parsedDT.datetime
+									.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+				}
 				break;
 			}
 		}
@@ -352,10 +357,12 @@ class RealDataSetting {
 			System.exit(-999);
 		}
 
-		System.out.print("テストモード[" + test_mode + "] 前の予測点は :  ");
-		System.out.println(curCoDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-		System.out.print("予測時刻以前の最新レコードは :  ");
-		System.out.println(parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+		if (debug) {
+			System.out.print("テストモード[" + test_mode + "] 前の予測点は :  ");
+			System.out.println(curCoDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+			System.out.print("予測時刻以前の最新レコードは :  ");
+			System.out.println(parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+		}
 
 		ArrayList<RecSource> recSources = new ArrayList<>(windowSize + 1);
 
@@ -365,11 +372,15 @@ class RealDataSetting {
 				String[] curOrgRec = rTimeRecs.get(i);
 				parsedDT = new ParseDateTime(curOrgRec[dtColIndex]);
 				if (parsedDT.gt(curCoDT)) {
-					System.out.print("b");
+					if (debug) {
+						System.out.print("b");
+					}
 					continue;
 				}
 				if (this.isNormalRec(curOrgRec)) {
-					System.out.println("aaa");
+					if (debug) {
+						System.out.println("aaa");
+					}
 					recSources.add(new RecSource(parsedDT, curOrgRec, ParseDateTime.fTime(curCoDT), i));
 					previousRecIndex = i;
 					curCoDT = curCoDT.minusHours(1);
@@ -546,48 +557,49 @@ class RealDataSetting {
 		}
 
 		//↓↓↓↓　 簡易テストコード　↓↓↓↓
-
-		for (int i = 0; i < windowSize; i++) {
-			System.out.printf("%.2f：%.2f  ", recLags.get(i), minDiffs.get(i));
-		}
-		System.out.println();
-		for (int i = 0; i <= windowSize; i++) {
-			System.out.printf(" %s%5d", recSources.get(i).coDT, recSources.get(i).recIndex);
-		}
-		System.out.println();
-		for (int i = 0; i < windowSize; i++) {
-			int FI6001_OrgCol = this.learningDataColToCol.get(8);
-			System.out.printf(" %.2f：%.2f ", Double.parseDouble(recSources.get(i + 1).orgRec[FI6001_OrgCol]),
-					FI6001_STATE_aList.get(i));
-		}
-		System.out.println();
-		for (int i = 0; i < windowSize; i++) {
-			System.out.printf(" %s %.6f %.6f\n", ParseDateTime.fTime(recSources.get(i + 1).pdt.datetime),
-					DATE_RADIAN_aList.get(i), TIME_RADIAN_aList.get(i));
-		}
-		System.out.println("dataNumForTest = " + this.dataNumForTest);
-		for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
-			for (int w = 0; w < windowSize; w++) {
-				System.out.print(this.predictDatetimesWT[iDataNum][w] + "  ");
-				System.out.println(this.predictCoDatetimesWT[iDataNum][w]);
+		if (debug) {
+			for (int i = 0; i < windowSize; i++) {
+				System.out.printf("%.2f：%.2f  ", recLags.get(i), minDiffs.get(i));
 			}
-		}
-		for (int i = 0; i < windowSize; i++) {
-			double w_FI6001_STATE = this.predictOriginDataW[0][i][3];
-			double w_PLC31_PAR_AI0083 = this.predictOriginDataW[0][i][6];
-			double wt_PLC31_PAR_AI0083 = this.predictOriginDataWT[0][i][1];
-			System.out.print(w_FI6001_STATE + "  ");
-			System.out.print(w_PLC31_PAR_AI0083 + "  ");
-			System.out.println(wt_PLC31_PAR_AI0083);
-		}
-		System.out.println("↓↓↓ 正規化後の値 ↓↓↓");
-		for (int i = 0; i < windowSize; i++) {
-			double w_FI6001_STATE = this.predictDataW[0][i][3];
-			double w_PLC31_PAR_AI0083 = this.predictDataW[0][i][6];
-			double wt_PLC31_PAR_AI0083 = this.predictDataWT[0][i][1];
-			System.out.print(w_FI6001_STATE + "  ");
-			System.out.print(w_PLC31_PAR_AI0083 + "  ");
-			System.out.println(wt_PLC31_PAR_AI0083);
+			System.out.println();
+			for (int i = 0; i <= windowSize; i++) {
+				System.out.printf(" %s%5d", recSources.get(i).coDT, recSources.get(i).recIndex);
+			}
+			System.out.println();
+			for (int i = 0; i < windowSize; i++) {
+				int FI6001_OrgCol = this.learningDataColToCol.get(8);
+				System.out.printf(" %.2f：%.2f ", Double.parseDouble(recSources.get(i + 1).orgRec[FI6001_OrgCol]),
+						FI6001_STATE_aList.get(i));
+			}
+			System.out.println();
+			for (int i = 0; i < windowSize; i++) {
+				System.out.printf(" %s %.6f %.6f\n", ParseDateTime.fTime(recSources.get(i + 1).pdt.datetime),
+						DATE_RADIAN_aList.get(i), TIME_RADIAN_aList.get(i));
+			}
+			System.out.println("dataNumForTest = " + this.dataNumForTest);
+			for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
+				for (int w = 0; w < windowSize; w++) {
+					System.out.print(this.predictDatetimesWT[iDataNum][w] + "  ");
+					System.out.println(this.predictCoDatetimesWT[iDataNum][w]);
+				}
+			}
+			for (int i = 0; i < windowSize; i++) {
+				double w_FI6001_STATE = this.predictOriginDataW[0][i][3];
+				double w_PLC31_PAR_AI0083 = this.predictOriginDataW[0][i][6];
+				double wt_PLC31_PAR_AI0083 = this.predictOriginDataWT[0][i][1];
+				System.out.print(w_FI6001_STATE + "  ");
+				System.out.print(w_PLC31_PAR_AI0083 + "  ");
+				System.out.println(wt_PLC31_PAR_AI0083);
+			}
+			System.out.println("↓↓↓ 正規化後の値 ↓↓↓");
+			for (int i = 0; i < windowSize; i++) {
+				double w_FI6001_STATE = this.predictDataW[0][i][3];
+				double w_PLC31_PAR_AI0083 = this.predictDataW[0][i][6];
+				double wt_PLC31_PAR_AI0083 = this.predictDataWT[0][i][1];
+				System.out.print(w_FI6001_STATE + "  ");
+				System.out.print(w_PLC31_PAR_AI0083 + "  ");
+				System.out.println(wt_PLC31_PAR_AI0083);
+			}
 		}
 		// ↑↑↑↑  簡易テストコード  ↑↑↑↑
 	}
@@ -743,12 +755,15 @@ class RecSource {
 }
 
 class CalcRadian {
+	private static boolean debug = false;
 
 	public static double getDateRadian(LocalDateTime ldt) {
 		LocalDateTime curYearStart = LocalDateTime.of(ldt.getYear(), 1, 1, 0, 0, 0, 0);
 		LocalDateTime nextYearStart = LocalDateTime.of(ldt.getYear() + 1, 1, 1, 0, 0, 0, 0);
 		long daysOfYear = curYearStart.until(nextYearStart, ChronoUnit.DAYS);
-		System.out.println(ldt.getYear() + "年は" + daysOfYear + "日です。");
+		if (debug) {
+			System.out.println(ldt.getYear() + "年は" + daysOfYear + "日です。");
+		}
 		return 2.0D * Math.PI * ((double) ldt.getDayOfYear() - 1.0D) / (double) daysOfYear;
 	}
 

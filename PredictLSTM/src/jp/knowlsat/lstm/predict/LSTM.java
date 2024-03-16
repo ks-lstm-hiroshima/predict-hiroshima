@@ -137,6 +137,7 @@ public class LSTM {
 		int test_mode = Integer.parseInt(settings.getProperty("test_mode"));
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
 
+		boolean debug = false;
 		int passed = 0;
 		int test_size = 1; // not changed
 
@@ -144,7 +145,7 @@ public class LSTM {
 		DataSetting ds = null;
 		try {
 			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, test_size,
-					rTimeRecs, passed);
+					rTimeRecs, passed, debug);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
@@ -178,7 +179,9 @@ public class LSTM {
 			input.allLoad();
 
 			// アンモニア処理追加 start
-			System.out.println("--- Ammonia Process Start ---");
+			if (debug) {
+				System.out.println("--- Ammonia Process Start ---");
+			}
 			NormalNormalize nn = (NormalNormalize) ds.colDnMap.get(18);
 
 			for (int i = windowSize - 1; i >= 0; i--) {
@@ -189,14 +192,19 @@ public class LSTM {
 				ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18] = nn
 						.inv(input.z_train[input.z_train.length - 1][18]);
 
-				System.out.print("[Prev index: ");
-				System.out.print(i);
-				System.out.print("] NP : ");
-				System.out.print(input.z_train[input.z_train.length - 1][18]);
-				System.out.print(" -> inv: ");
-				System.out.println(ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18]);
+				if (debug) {
+					System.out.print("[Prev index: ");
+					System.out.print(i);
+					System.out.print("] NP : ");
+					System.out.print(input.z_train[input.z_train.length - 1][18]);
+					System.out.print(" -> inv: ");
+					System.out.println(ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18]);
+				}
 			}
-			System.out.println("--- Ammonia Process End ---");
+
+			if (debug) {
+				System.out.println("--- Ammonia Process End ---");
+			}
 			// アンモニア処理追加 end
 
 			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
