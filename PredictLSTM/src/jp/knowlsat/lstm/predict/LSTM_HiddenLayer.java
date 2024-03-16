@@ -149,7 +149,7 @@ public class LSTM_HiddenLayer {
 					double div_a = 1.0 / A[j];
 
 					Y[j] = Ot[j] * (Math.pow(C[j] + 1.0 - B[j], A[j]) * div_a - (div_a - B[j]));
-				} else if (C[j] >= 0.0){
+				} else if (C[j] >= 0.0) {
 					Y[j] = Ot[j] * C[j];
 				} else {
 					Y[j] = Ot[j] * (Math.exp(C[j]) - 1.0);

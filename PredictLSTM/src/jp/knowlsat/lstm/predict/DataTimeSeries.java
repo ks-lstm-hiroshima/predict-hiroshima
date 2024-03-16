@@ -138,7 +138,7 @@ public class DataTimeSeries {
 		return this.datetimes;
 	}
 
-	public String[] getCoDatetimes(){
+	public String[] getCoDatetimes() {
 		return this.coDatetimes;
 	}
 

@@ -24,10 +24,12 @@ public class LSTM_Test {
 			}
 		}
 
-		LSTM_Output output = lstm.outputLayer.test(out[lstm.Layers - 1][lstm.window - 1], lstm.z_target[lstm.window - 1],
-				lstm.z_flag[lstm.window - 1], lstm.STATE_THRESHOLD, lstm.z_datetimes[lstm.window - 1], lstm.z_coDatetimes[lstm.window - 1],
-				lstm.incident, lstm.minute, lstm.z_train);
+		LSTM_Output output = lstm.outputLayer.test(out[lstm.Layers - 1][lstm.window - 1],
+				lstm.z_target[lstm.window - 1], lstm.z_flag[lstm.window - 1], lstm.STATE_THRESHOLD,
+				lstm.z_datetimes[lstm.window - 1], lstm.z_coDatetimes[lstm.window - 1],
+				lstm.incident, lstm.minute, lstm.z_train, lstm.origin_z_train);
 
+		output.setPrevResult(lstm.prev.prev_date, lstm.prev.prev_inv_p, lstm.prev.prev_incident);
 		output.print();
 		output.outputInputCSV();
 		output.outputStatisticsCSV();

@@ -31,4 +31,5 @@ public class LSTM_Date {
 
 		return new LSTM_Date(item[0], item[1], item[2], item[3], this.minute);
 	}
+
 }

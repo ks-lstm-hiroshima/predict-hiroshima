@@ -29,17 +29,23 @@ public class LSTM {
 	public int ammonia_mode;
 	public String minute;
 
-	public void setData(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes, String[] z_coDatetimes, boolean incident) {
+	public double[][] origin_z_train;
+	public LSTM_PrevStatistics prev;
+
+	public void setData(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
+			String[] z_coDatetimes, boolean incident, double[][] origin_z_train) {
 		this.z_train = z_train;
 		this.z_target = z_target;
 		this.z_flag = z_flag;
 		this.z_datetimes = z_datetimes;
 		this.z_coDatetimes = z_coDatetimes;
 		this.incident = incident;
+		this.origin_z_train = origin_z_train;
 	}
 
-	public LSTM(int Layers, int window, int nIn, int nHidden, int nOut, int targetIndex, int peephole_mode, int elu_mode, double STATE_THRESHOLD,
-			DataSetting ds, int testRealSize, int test_mode, int ammonia_mode, String minute) {
+	public LSTM(int Layers, int window, int nIn, int nHidden, int nOut, int targetIndex, int peephole_mode,
+			int elu_mode, double STATE_THRESHOLD, DataSetting ds, int testRealSize, int test_mode, int ammonia_mode,
+			String minute) {
 		this.Layers = Layers;
 		this.window = window;
 		this.hiddenLayer = new LSTM_HiddenLayer[Layers];
@@ -84,7 +90,7 @@ public class LSTM {
 		String fileName = "setting/setting_";
 		String minute = "";
 
-		if (args.length < 2 ) {
+		if (args.length < 2) {
 			fileName += "Ammonia_00";
 		} else {
 			if (args[0] != "0") {
@@ -125,20 +131,19 @@ public class LSTM {
 		int inputSeries = Integer.parseInt(settings.getProperty("inputSeries"));
 		int outDataSize = Integer.parseInt(settings.getProperty("outDataSize"));
 		double KSPP = Double.parseDouble(settings.getProperty("KSPP"));
-		double STATE_THRESHOLD = Double.parseDouble(settings.getProperty("STATE_THRESHOLD"));			
+		double STATE_THRESHOLD = Double.parseDouble(settings.getProperty("STATE_THRESHOLD"));
 		int test_mode = Integer.parseInt(settings.getProperty("test_mode"));
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
 
-		
-		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
 		int passed = 0;
 		int test_size = 1; // not changed
 		int dataNumForTest = passed + test_size;
-		
-		ArrayList<String[]> rTimeRecs = csv.getListCSV();		
+
+		ArrayList<String[]> rTimeRecs = csv.getListCSV();
 		DataSetting ds = null;
 		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest, rTimeRecs);
+			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest,
+					rTimeRecs);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
@@ -150,27 +155,28 @@ public class LSTM {
 		int peephole_mode = Integer.parseInt(settings.getProperty("peephole_mode"));
 		int elu_mode = Integer.parseInt(settings.getProperty("elu_mode"));
 
-		// int test_size = 1; // not changed
-		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
+		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize,
+				ds.targetIndexes[ds.nakajiaIndexInTargets],
 				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
 		LSTM_Load.load(lstm);
-		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets], minute);
+		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
+				minute);
+		lstm.prev = new LSTM_PrevStatistics(windowSize, minute);
 
 		// -- predict start --
-		// int passed = windowSize; // windowSize時刻前から現在までのデータを用いて再予測（障害などの理由により過去X時刻から再予測する場合）
-		// int passed = 1; // 1時刻前のデータを用いて予測（通常は1時刻）
-
 		for (int test_index = passed; test_index >= 0; test_index--) {
-			/* 下記をリアルタイム前処理データに差し替える */
-			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType, ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index);
-			input.set(dm.z_train[0], dm.z_target[0], dm.z_flag[0], dm.z_datetimes[0], dm.z_coDatetimes[0], false);
+			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType,
+					ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index);
 
-			// DataRealtime dr = new DataRealtime(ds, test_size, windowSize, dataType, ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index); // 修正イメージ
-			// input.set(dr.z_train[0], dr.z_target[0], dr.z_flag[0], dr.z_datetimes[0], dr.z_coDatetimes[0], dr.incident); // 修正イメージ
-			/* ここまで */
-
+			lstm.prev.set(dm.z_coDatetimes[dm.z_coDatetimes.length - 1]);
+			lstm.prev.allLoad();
+			input.set(dm.z_train[dm.z_train.length - 1], dm.z_target[dm.z_target.length - 1],
+					dm.z_flag[dm.z_flag.length - 1], dm.z_datetimes[dm.z_datetimes.length - 1],
+					dm.z_coDatetimes[dm.z_coDatetimes.length - 1], false);
 			input.allLoad();
-			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes, input.incident);
+
+			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
+					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1]);
 			LSTM_Test.test(lstm);
 		}
 		// -- predict end --

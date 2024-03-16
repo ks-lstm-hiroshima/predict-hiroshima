@@ -27,7 +27,7 @@ public class DataSetting {
 	public double[][][] allDataWT;
 	public String[][] datetimesWT;
 	public String[][] coDatetimesWT;
-	
+
 	public int predictDataSize;
 	public int predictDataSize_window;
 	public double[][][] predictOriginDataW;
@@ -36,11 +36,11 @@ public class DataSetting {
 	public double[][][] predictDataWT;
 	public String[][] predictDatetimesWT;
 	public String[][] predictCoDatetimesWT;
-	
 
 	public double[][] data;
 
-	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode, int dataNumForTest, ArrayList<String[]> rTimeRecs)
+	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
+			int dataNumForTest, ArrayList<String[]> rTimeRecs)
 			throws IOException {
 
 		this.inputSize = inputSize;
@@ -49,12 +49,12 @@ public class DataSetting {
 
 		// minutes difference column
 		int minDiffCol = switch (test_mode) {
-			case -1 -> 5;
-			case 0 -> 6;
-			case 30 -> 7;
-			default -> {
+		case -1 -> 5;
+		case 0 -> 6;
+		case 30 -> 7;
+		default -> {
 			throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
-			}
+		}
 		};
 		List<Integer> colIndexes;
 
@@ -77,22 +77,23 @@ public class DataSetting {
 		// mode が　30 なら　カラム2のフラグが"30" のレコードのみ読み込む
 		// 上記の設定を colToFlagValsList に設定して DataTimeSeries クラスの dp.get()に引数として渡して 読み込みレコードを制御する。
 		List<ColToFlagVals> colToFlagValsList = switch (test_mode) {
-			case -1 -> List.of();
-			case 0 -> List.of(new ColToFlagVals(2, List.of("0")));
-			case 30 -> List.of(new ColToFlagVals(2, List.of("30")));
-			default -> {
-				throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
-			}
+		case -1 -> List.of();
+		case 0 -> List.of(new ColToFlagVals(2, List.of("0")));
+		case 30 -> List.of(new ColToFlagVals(2, List.of("30")));
+		default -> {
+			throw new IllegalArgumentException("不正な値：test_mode = " + test_mode);
+		}
 		};
 
 		List<ChangeParamValByFlag> changeParamValByFlagList = List.of(
 				// index 9 が "0" なら　index 15 を KSPP に変更する、ただし KSPP が 0.0 以上の時だけ。
 				new ChangeParamValByFlag(9, "0", 15, KSPP, x -> x >= 0.0) // KSPP値をホワイトノイズ（KS秘伝の味）として付与
-				);
+		);
 
 		DataTimeSeries dp = new DataTimeSeries(
 				"data/MIN30_ver2.1.0__20180301_0000__20230903_2330.csv",
-				colIndexes, targetColIndexes, timeColIndexes, colToFlagValsList, changeParamValByFlagList, datetimeColIndex, coDatetimeColIndex);
+				colIndexes, targetColIndexes, timeColIndexes, colToFlagValsList, changeParamValByFlagList,
+				datetimeColIndex, coDatetimeColIndex);
 
 		ArrayList<ArrayList<Double>> dataList = dp.getData();
 		String[] datetimes = dp.getDatetimes();
@@ -110,8 +111,8 @@ public class DataSetting {
 
 		this.data = new double[numOfParam][];
 
-		this.targetDnList = new ArrayList<>( targetArrayIndexes.size() );
-		HashMap<Integer,DataNormalize> colDnMap = new HashMap<>( colIndexes.size() + 1, 1.0f); // ArrayListの方が良い。
+		this.targetDnList = new ArrayList<>(targetArrayIndexes.size());
+		HashMap<Integer, DataNormalize> colDnMap = new HashMap<>(colIndexes.size() + 1, 1.0f); // ArrayListの方が良い。
 
 		for (int i = 0; i < numOfParam; i++) {
 			DataNormalize dn;
@@ -168,7 +169,8 @@ public class DataSetting {
 			}
 		}
 
-		RealDataSetting rds = new RealDataSetting(rTimeRecs, test_mode, colIndexes, timeColIndexes, datetimeColIndex, targetColIndexes, colDnMap, this.windowSize, dataNumForTest);
+		RealDataSetting rds = new RealDataSetting(rTimeRecs, test_mode, colIndexes, timeColIndexes, datetimeColIndex,
+				targetColIndexes, colDnMap, this.windowSize, dataNumForTest);
 
 		this.predictDataSize = rds.getPredictDataSize();
 		this.predictDataSize_window = rds.getPredictDataSize_window();
@@ -177,11 +179,13 @@ public class DataSetting {
 		this.predictDatetimesWT = rds.getPredictDatetimesWT();
 		this.predictCoDatetimesWT = rds.getPredictCoDatetimesWT();
 
+		this.predictOriginDataW = rds.getPredictOriginDataW();
 	}
 
 	public int getDataTypeSize() {
 		return this.dataTypeSize;
 	}
+
 }
 
 // colIndex の値が、Collection flagValsに設定した値（ホワイトリスト）に含まれている行のみレコードを読み込む設定をするクラス。
@@ -198,6 +202,7 @@ class ColToFlagVals {
 	public boolean isNotContain(String[] row) {
 		return !flagVals.contains(row[colIndex]);
 	}
+
 }
 
 // KSPPのように、特定のカラムのフラグを元に、別のカラムの値を変更する処理を抽象化する機能です。
@@ -246,8 +251,7 @@ interface JugeChange {
 	boolean isChange(double value);
 }
 
-
-class RealDataSetting{
+class RealDataSetting {
 	private int predictDataSize;
 	private int predictDataSize_window;
 	private double[][][] predictDataW;
@@ -257,14 +261,14 @@ class RealDataSetting{
 	private String[][] predictDatetimesWT;
 	private String[][] predictCoDatetimesWT;
 	public int dataNumForTest;
-	
+
 	private List<Integer> colIndexes;
-	private HashMap<Integer,DataNormalize> colDnMap;
-	private final HashMap<Integer,Integer> learningDataColToCol;
+	private HashMap<Integer, DataNormalize> colDnMap;
+	private final HashMap<Integer, Integer> learningDataColToCol;
 	{
 		learningDataColToCol = new HashMap<>();
-		learningDataColToCol.put(Integer.valueOf(0),  Integer.valueOf(0));
-		learningDataColToCol.put(Integer.valueOf(8),  Integer.valueOf(29));
+		learningDataColToCol.put(Integer.valueOf(0), Integer.valueOf(0));
+		learningDataColToCol.put(Integer.valueOf(8), Integer.valueOf(29));
 		learningDataColToCol.put(Integer.valueOf(11), Integer.valueOf(59));
 		learningDataColToCol.put(Integer.valueOf(12), Integer.valueOf(59));
 		learningDataColToCol.put(Integer.valueOf(13), Integer.valueOf(59));
@@ -280,8 +284,10 @@ class RealDataSetting{
 		learningDataColToCol.put(Integer.valueOf(23), Integer.valueOf(103));
 		learningDataColToCol.put(Integer.valueOf(24), Integer.valueOf(134));
 	}
-	
-	RealDataSetting(ArrayList<String[]> rTimeRecs, int test_mode, List<Integer> colIndexes, List<Integer> timeColIndexes, int datetimeColIndex, List<Integer> targetColIndexes, HashMap<Integer,DataNormalize> colDnMap, int windowSize, int dataNumForTest){
+
+	RealDataSetting(ArrayList<String[]> rTimeRecs, int test_mode, List<Integer> colIndexes,
+			List<Integer> timeColIndexes, int datetimeColIndex, List<Integer> targetColIndexes,
+			HashMap<Integer, DataNormalize> colDnMap, int windowSize, int dataNumForTest) {
 		this.colIndexes = colIndexes;
 		this.colDnMap = colDnMap;
 
@@ -294,12 +300,12 @@ class RealDataSetting{
 		ArrayList<String> pDateTimeWT = new ArrayList<>(windowSize);
 		ArrayList<String> pCoDateTimeWT = new ArrayList<>(windowSize);
 
-		HashMap<Integer,ArrayList<Double>> orgColToArray = new HashMap<>();
+		HashMap<Integer, ArrayList<Double>> orgColToArray = new HashMap<>();
 
 		int dtColIndex = this.learningDataColToCol.get(Integer.valueOf(datetimeColIndex));
 
 		LocalDateTime nowDT = LocalDateTime.now();
-		nowDT = LocalDateTime.of(2023,9,3,22,45, nowDT.getSecond(), nowDT.getNano());
+		nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
 		System.out.print("起動時刻は :  ");
 		System.out.println(nowDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 		System.out.println(nowDT.getNano() + "ナノ秒");
@@ -307,7 +313,8 @@ class RealDataSetting{
 
 		// テストモード　-1（30分間隔モデル）の時にこのコードは正常に機能しない
 		System.out.print("予測時刻は :  ");
-		System.out.println(ParseDateTime.getNextDT(nowDT, test_mode).format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+		System.out.println(ParseDateTime.getNextDT(nowDT, test_mode)
+				.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 
 		LocalDateTime nextDT = ParseDateTime.getNextDT(nowDT, test_mode);
 
@@ -321,38 +328,39 @@ class RealDataSetting{
 		int previousRecIndex = 0;
 		String dtStr;
 		ParseDateTime parsedDT = null;
-		for( ;previousRecIndex < rTimeRecs.size(); previousRecIndex++) {
-			dtStr = rTimeRecs.get(previousRecIndex) [dtColIndex];
+		for (; previousRecIndex < rTimeRecs.size(); previousRecIndex++) {
+			dtStr = rTimeRecs.get(previousRecIndex)[dtColIndex];
 			parsedDT = new ParseDateTime(dtStr);
-			if(parsedDT.le(curCoDT)) {
-				System.out.println("abc" + parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+			if (parsedDT.le(curCoDT)) {
+				System.out.println(
+						"abc" + parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 				break;
 			}
 		}
-		if( previousRecIndex >= rTimeRecs.size()) {
+		if (previousRecIndex >= rTimeRecs.size()) {
 			System.out.println("前の定刻レコードが見つかりませんでした。");
 			System.out.println("previousRecIndex = " + previousRecIndex);
 			System.out.println("rTimeRecs.size() = " + rTimeRecs.size());
 			System.exit(-999);
 		}
 
-		System.out.print( "テストモード[" + test_mode +  "] 前の予測点は :  ");
+		System.out.print("テストモード[" + test_mode + "] 前の予測点は :  ");
 		System.out.println(curCoDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-		System.out.print( "予測時刻以前の最新レコードは :  ");
+		System.out.print("予測時刻以前の最新レコードは :  ");
 		System.out.println(parsedDT.datetime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 
-		ArrayList<RecSource> recSources = new ArrayList<>( windowSize + 1 );
+		ArrayList<RecSource> recSources = new ArrayList<>(windowSize + 1);
 
 		// 同じ時刻のレコードの重複や、レコードの欠損があるので、レコードのインデックスとズレた分数(ふんすう)は一致しない事がある。
-		for(int wIndex=0; wIndex <= windowSize; wIndex++){
-			for(int i = previousRecIndex; i < rTimeRecs.size(); i++){
+		for (int wIndex = 0; wIndex <= windowSize; wIndex++) {
+			for (int i = previousRecIndex; i < rTimeRecs.size(); i++) {
 				String[] curOrgRec = rTimeRecs.get(i);
 				parsedDT = new ParseDateTime(curOrgRec[dtColIndex]);
-				if( parsedDT.gt(curCoDT) ){
+				if (parsedDT.gt(curCoDT)) {
 					System.out.print("b");
 					continue;
 				}
-				if( this.isNormalRec( curOrgRec ) ){
+				if (this.isNormalRec(curOrgRec)) {
 					System.out.println("aaa");
 					recSources.add(new RecSource(parsedDT, curOrgRec, ParseDateTime.fTime(curCoDT), i));
 					previousRecIndex = i;
@@ -363,9 +371,9 @@ class RealDataSetting{
 		}
 
 		// 過去の実時刻と論理時刻を文字列で保持
-		for(int i = 0; i < windowSize -1; i++){
+		for (int i = 0; i < windowSize - 1; i++) {
 			pDateTimeWT.add(ParseDateTime.fTime(recSources.get(i).pdt.datetime));
-			pCoDateTimeWT.add(recSources.get(i).coDT);	
+			pCoDateTimeWT.add(recSources.get(i).coDT);
 		}
 
 		Collections.reverse(pDateTimeWT);
@@ -375,7 +383,7 @@ class RealDataSetting{
 		this.predictCoDatetimesWT = new String[this.dataNumForTest][windowSize];
 
 		for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
-			for (int w = 0; w < windowSize; w++){
+			for (int w = 0; w < windowSize; w++) {
 				this.predictDatetimesWT[iDataNum][w] = pDateTimeWT.get(iDataNum + w);
 				this.predictCoDatetimesWT[iDataNum][w] = pCoDateTimeWT.get(iDataNum + w);
 			}
@@ -386,112 +394,114 @@ class RealDataSetting{
 		int[] recLagIndexes = new int[windowSize];
 		ArrayList<Double> recLags = new ArrayList<>(windowSize);
 		int firstRecLagIndex = 0;
-		if(colIndexes.contains(4)){
+		if (colIndexes.contains(4)) {
 			recLags = new ArrayList<Double>(windowSize);
-			firstRecLagIndex = (int) firstCoDT.until( recSources.get(0).pdt.datetime, ChronoUnit.MINUTES);
+			firstRecLagIndex = (int) firstCoDT.until(recSources.get(0).pdt.datetime, ChronoUnit.MINUTES);
 			recLagIndexes[0] = firstRecLagIndex;
 			recLags.add(Double.valueOf(firstRecLagIndex / 5.0D));
-			for(int i=1; i<windowSize; i++){
-				recLagIndexes[i] = i*60 + firstRecLagIndex - (recSources.get(i).recIndex - recSources.get(0).recIndex);
+			for (int i = 1; i < windowSize; i++) {
+				recLagIndexes[i] = i * 60 + firstRecLagIndex
+						- (recSources.get(i).recIndex - recSources.get(0).recIndex);
 				recLags.add(Double.valueOf(recLagIndexes[i] / 5.0D));
 			}
 		}
-		Collections.reverse( recLags );
+		Collections.reverse(recLags);
 		orgColToArray.put(Integer.valueOf(4), recLags);
 
 		// 6:MIN_DIFF_60_00, 7:MIN_DIFF_60_30 がパラメータに採用されていれば。　// 5:MIN_DIFF_30の採用は想定外
 		ArrayList<Double> minDiffs = new ArrayList<>(windowSize);
-		if( colIndexes.contains(6) || colIndexes.contains(7) ){
-			for(int i=0; i<windowSize; i++){
+		if (colIndexes.contains(6) || colIndexes.contains(7)) {
+			for (int i = 0; i < windowSize; i++) {
 				minDiffs.add(
-					Double.valueOf(
-						(double) recSources.get(i+1).pdt.datetime.until(recSources.get(i).pdt.datetime, ChronoUnit.MINUTES)
-					)
-				);
+						Double.valueOf(
+								(double) recSources.get(i + 1).pdt.datetime.until(recSources.get(i).pdt.datetime,
+										ChronoUnit.MINUTES)));
 			}
 		}
-		Collections.reverse( minDiffs );
+		Collections.reverse(minDiffs);
 		Integer minDiffsCol = null;
-		if( colIndexes.contains(6) ){
+		if (colIndexes.contains(6)) {
 			minDiffsCol = Integer.valueOf(6);
-		}else if( colIndexes.contains(7) ){
-			minDiffsCol = Integer.
-			valueOf(7);
-		}else if( colIndexes.contains(5) ){
+		} else if (colIndexes.contains(7)) {
+			minDiffsCol = Integer.valueOf(7);
+		} else if (colIndexes.contains(5)) {
 			throw new AssertionError("パラメータ5番 MIN_DIFF_30 の指定は未対応です", null);
 		}
 		orgColToArray.put(minDiffsCol, minDiffs);
 
 		// 10:FI6001_STATE がパラメータに採用されていれば。
 		ArrayList<Double> FI6001_STATE_aList = new ArrayList<>(windowSize);
-		if(colIndexes.contains(10)){
+		if (colIndexes.contains(10)) {
 			int FI6001_OrgCol = this.learningDataColToCol.get(8);
-			for(int i=0; i<windowSize; i++){
+			for (int i = 0; i < windowSize; i++) {
 				int rowIndex = recSources.get(i).recIndex;
-				double val = Double.parseDouble( rTimeRecs.get(rowIndex)[FI6001_OrgCol] );
-				FI6001_STATE_aList.add( 
-					val >= 100.0D ? 1.0: 0.0
-				);
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[FI6001_OrgCol]);
+				FI6001_STATE_aList.add(
+						val >= 100.0D ? 1.0 : 0.0);
 			}
 		}
-		Collections.reverse( FI6001_STATE_aList );
+		Collections.reverse(FI6001_STATE_aList);
 		orgColToArray.put(Integer.valueOf(10), FI6001_STATE_aList);
 
 		// 25:DATE_RADIAN がパラメータに採用されていれば。
 		ArrayList<Double> DATE_RADIAN_aList = new ArrayList<>(windowSize);
-		if(colIndexes.contains(25)){
-			for(int i=0; i<windowSize; i++){
-				DATE_RADIAN_aList.add( CalcRadian.getDateRadian( recSources.get(i).pdt.datetime ) );
+		if (colIndexes.contains(25)) {
+			for (int i = 0; i < windowSize; i++) {
+				DATE_RADIAN_aList.add(CalcRadian.getDateRadian(recSources.get(i).pdt.datetime));
 			}
 		}
-		Collections.reverse( DATE_RADIAN_aList );
+		Collections.reverse(DATE_RADIAN_aList);
 		orgColToArray.put(Integer.valueOf(25), DATE_RADIAN_aList);
 
 		// 26:TIME_RADIAN がパラメータに採用されていれば。
 		ArrayList<Double> TIME_RADIAN_aList = new ArrayList<>(windowSize);
-		if(colIndexes.contains(26)){
-			for(int i=0; i<windowSize; i++){
-				TIME_RADIAN_aList.add( CalcRadian.getTimeRadian( recSources.get(i).pdt.datetime ) );
+		if (colIndexes.contains(26)) {
+			for (int i = 0; i < windowSize; i++) {
+				TIME_RADIAN_aList.add(CalcRadian.getTimeRadian(recSources.get(i).pdt.datetime));
 			}
 		}
-		Collections.reverse( TIME_RADIAN_aList );
+		Collections.reverse(TIME_RADIAN_aList);
 		orgColToArray.put(Integer.valueOf(26), TIME_RADIAN_aList);
 
 		// 27:AMMONIUM1001 がパラメータに採用されていれば。
 		Double ammo_fixed = Double.valueOf(0.01); // 正規化前の値（学習データ MIN30_ver2.1.0__20180301_0000__20230903_2330.csv での下限値）
 		ArrayList<Double> AMMONIUM1001_aList = new ArrayList<>(windowSize);
-		if(colIndexes.contains(27)){
-			for(int i=0; i<windowSize; i++){
-				AMMONIUM1001_aList.add( ammo_fixed );
+		if (colIndexes.contains(27)) {
+			for (int i = 0; i < windowSize; i++) {
+				AMMONIUM1001_aList.add(ammo_fixed);
 			}
 		}
-		Collections.reverse( AMMONIUM1001_aList ); // 固定値の場合は不要な処理
+		Collections.reverse(AMMONIUM1001_aList); // 固定値の場合は不要な処理
 		orgColToArray.put(Integer.valueOf(27), AMMONIUM1001_aList);
 
 		this.predictOriginDataW = new double[this.dataNumForTest][windowSize][colIndexes.size()];
 		this.predictDataW = new double[this.dataNumForTest][windowSize][colIndexes.size()];
 
-		HashMap<Integer,DataNormalize> targetColDnMap = new HashMap<>( targetColIndexes.size() + 1, 1.0f); // ArrayListの方が良い。
+		HashMap<Integer, DataNormalize> targetColDnMap = new HashMap<>(targetColIndexes.size() + 1, 1.0f); // ArrayListの方が良い。
 
 		Collections.reverse(recSources); // この操作を、実時刻と論理時刻保持の操作の前に移動させない事
-		for(int iCol=0; iCol < colIndexes.size(); iCol++){
+		for (int iCol = 0; iCol < colIndexes.size(); iCol++) {
 			Integer col = colIndexes.get(iCol);
-			if(targetColIndexes.contains(col)) targetColDnMap.put(Integer.valueOf(targetColIndexes.indexOf(col)), colDnMap.get(iCol));
-			if(this.learningDataColToCol.containsKey(col)){
-				for(int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++){
-					for( int i=1; i <= windowSize; i++ ){
-						this.predictOriginDataW[iDataNum][i-1][iCol] = Double.parseDouble( recSources.get(i).orgRec[ (int) this.learningDataColToCol.get(col) ]);
-						this.predictDataW[iDataNum][i-1][iCol] = colDnMap.get(iCol).normalize(this.predictOriginDataW[iDataNum][i-1][iCol]); // ボクシング：get(iCol)
-					}
-				}				
-			}else if(orgColToArray.containsKey(col)){
-				for(int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++){
-					for(int i=0; i < windowSize; i++ ){
-						this.predictOriginDataW[iDataNum][i][iCol] = orgColToArray.get(col).get(i);
-						this.predictDataW[iDataNum][i][iCol] = colDnMap.get(iCol).normalize(this.predictOriginDataW[iDataNum][i][iCol]); // ボクシング：get(iCol)
+			if (targetColIndexes.contains(col))
+				targetColDnMap.put(Integer.valueOf(targetColIndexes.indexOf(col)), colDnMap.get(iCol));
+			if (this.learningDataColToCol.containsKey(col)) {
+				for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
+					for (int i = 1; i <= windowSize; i++) {
+						this.predictOriginDataW[iDataNum][i - 1][iCol] = Double
+								.parseDouble(recSources.get(i).orgRec[(int) this.learningDataColToCol.get(col)]);
+						this.predictDataW[iDataNum][i - 1][iCol] = colDnMap.get(iCol)
+								.normalize(this.predictOriginDataW[iDataNum][i - 1][iCol]); // ボクシング：get(iCol)
 					}
 				}
-			}else{
+			} else if (orgColToArray.containsKey(col)) {
+				for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
+					for (int i = 0; i < windowSize; i++) {
+						this.predictOriginDataW[iDataNum][i][iCol] = orgColToArray.get(col).get(i);
+						this.predictDataW[iDataNum][i][iCol] = colDnMap.get(iCol)
+								.normalize(this.predictOriginDataW[iDataNum][i][iCol]); // ボクシング：get(iCol)
+					}
+				}
+			} else {
 				throw new AssertionError(col.toString() + "番はRealDataSettingクラスでサポートされていないカラム数です。");
 			}
 		}
@@ -499,125 +509,128 @@ class RealDataSetting{
 		this.predictOriginDataWT = new double[this.dataNumForTest][windowSize][targetColIndexes.size()];
 		this.predictDataWT = new double[this.dataNumForTest][windowSize][targetColIndexes.size()];
 
-		for(int iCol=0; iCol < targetColIndexes.size(); iCol++){
+		for (int iCol = 0; iCol < targetColIndexes.size(); iCol++) {
 			Integer col = targetColIndexes.get(iCol);
-			if(this.learningDataColToCol.containsKey(col)){
-				for(int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++){
-					for(int i=2; i<=windowSize; i++){
-						this.predictOriginDataWT[iDataNum][i-2][iCol] = Double.parseDouble( recSources.get(i).orgRec[ (int) this.learningDataColToCol.get(col) ]);
-						this.predictDataWT[iDataNum][i-2][iCol] = targetColDnMap.get(iCol).normalize(this.predictOriginDataWT[iDataNum][i-2][iCol]); // ボクシング：get(iCol)
+			if (this.learningDataColToCol.containsKey(col)) {
+				for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
+					for (int i = 2; i <= windowSize; i++) {
+						this.predictOriginDataWT[iDataNum][i - 2][iCol] = Double
+								.parseDouble(recSources.get(i).orgRec[(int) this.learningDataColToCol.get(col)]);
+						this.predictDataWT[iDataNum][i - 2][iCol] = targetColDnMap.get(iCol)
+								.normalize(this.predictOriginDataWT[iDataNum][i - 2][iCol]); // ボクシング：get(iCol)
 					}
-					this.predictOriginDataWT[iDataNum][windowSize -1][iCol] = 0.0; // 未来の値なので意味のない値0.0で埋める。
-					this.predictDataWT[iDataNum][windowSize -1][iCol] = 0.0; // 未来の点に関して、正規化や逆変換が出来る関係でない事に注意
+					this.predictOriginDataWT[iDataNum][windowSize - 1][iCol] = 0.0; // 未来の値なので意味のない値0.0で埋める。
+					this.predictDataWT[iDataNum][windowSize - 1][iCol] = 0.0; // 未来の点に関して、正規化や逆変換が出来る関係でない事に注意
 				}
-			}else if(orgColToArray.containsKey(col)){
-				for(int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++){
-					for(int i=1; i < windowSize; i++ ){
-						this.predictOriginDataWT[iDataNum][i-1][iCol] = orgColToArray.get(col).get(i);
-						this.predictDataWT[iDataNum][i-1][iCol] = targetColDnMap.get(iCol).normalize(this.predictOriginDataWT[iDataNum][i-1][iCol]); // ボクシング：get(iCol)
+			} else if (orgColToArray.containsKey(col)) {
+				for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
+					for (int i = 1; i < windowSize; i++) {
+						this.predictOriginDataWT[iDataNum][i - 1][iCol] = orgColToArray.get(col).get(i);
+						this.predictDataWT[iDataNum][i - 1][iCol] = targetColDnMap.get(iCol)
+								.normalize(this.predictOriginDataWT[iDataNum][i - 1][iCol]); // ボクシング：get(iCol)
 					}
-					this.predictOriginDataWT[iDataNum][windowSize-1][iCol] = 0.0; // 未来の値なので意味のない値0.0で埋める。
-					this.predictDataWT[iDataNum][windowSize -1][iCol] = 0.0; // 未来の点に関して、正規化や逆変換が出来る関係でない事に注意
+					this.predictOriginDataWT[iDataNum][windowSize - 1][iCol] = 0.0; // 未来の値なので意味のない値0.0で埋める。
+					this.predictDataWT[iDataNum][windowSize - 1][iCol] = 0.0; // 未来の点に関して、正規化や逆変換が出来る関係でない事に注意
 				}
-			}else{
+			} else {
 				throw new AssertionError(col.toString() + "番はRealDataSettingクラスでサポートされていないカラム数です。");
 			}
 		}
 
 		//↓↓↓↓　 簡易テストコード　↓↓↓↓
 
-		for(int i=0; i<windowSize; i++){
-			System.out.printf( "%.2f：%.2f  ",recLags.get(i), minDiffs.get(i) );
+		for (int i = 0; i < windowSize; i++) {
+			System.out.printf("%.2f：%.2f  ", recLags.get(i), minDiffs.get(i));
 		}
 		System.out.println();
-		for(int i=0; i<=windowSize; i++){
-			System.out.printf(" %s%5d", recSources.get(i).coDT,recSources.get(i).recIndex);
+		for (int i = 0; i <= windowSize; i++) {
+			System.out.printf(" %s%5d", recSources.get(i).coDT, recSources.get(i).recIndex);
 		}
 		System.out.println();
-		for(int i=0; i<windowSize; i++){
+		for (int i = 0; i < windowSize; i++) {
 			int FI6001_OrgCol = this.learningDataColToCol.get(8);
-			System.out.printf(" %.2f：%.2f ", Double.parseDouble(recSources.get(i+1).orgRec[FI6001_OrgCol]), FI6001_STATE_aList.get(i));
+			System.out.printf(" %.2f：%.2f ", Double.parseDouble(recSources.get(i + 1).orgRec[FI6001_OrgCol]),
+					FI6001_STATE_aList.get(i));
 		}
 		System.out.println();
-		for(int i=0; i<windowSize; i++){
-			System.out.printf(" %s %.6f %.6f\n", ParseDateTime.fTime(recSources.get(i+1).pdt.datetime), DATE_RADIAN_aList.get(i), TIME_RADIAN_aList.get(i));
+		for (int i = 0; i < windowSize; i++) {
+			System.out.printf(" %s %.6f %.6f\n", ParseDateTime.fTime(recSources.get(i + 1).pdt.datetime),
+					DATE_RADIAN_aList.get(i), TIME_RADIAN_aList.get(i));
 		}
 		System.out.println("dataNumForTest = " + this.dataNumForTest);
-		for(int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
-			for (int w = 0; w < windowSize; w++){
-				System.out.print( this.predictDatetimesWT[iDataNum][w] + "  ");
-				System.out.println( this.predictCoDatetimesWT[iDataNum][w] );
+		for (int iDataNum = 0; iDataNum < this.dataNumForTest; iDataNum++) {
+			for (int w = 0; w < windowSize; w++) {
+				System.out.print(this.predictDatetimesWT[iDataNum][w] + "  ");
+				System.out.println(this.predictCoDatetimesWT[iDataNum][w]);
 			}
 		}
-		for(int i=0; i < windowSize; i++){
+		for (int i = 0; i < windowSize; i++) {
 			double w_FI6001_STATE = this.predictOriginDataW[0][i][3];
 			double w_PLC31_PAR_AI0083 = this.predictOriginDataW[0][i][6];
 			double wt_PLC31_PAR_AI0083 = this.predictOriginDataWT[0][i][1];
-			System.out.print( w_FI6001_STATE + "  " );
-			System.out.print( w_PLC31_PAR_AI0083 + "  " );
-			System.out.println( wt_PLC31_PAR_AI0083 );
+			System.out.print(w_FI6001_STATE + "  ");
+			System.out.print(w_PLC31_PAR_AI0083 + "  ");
+			System.out.println(wt_PLC31_PAR_AI0083);
 		}
 		System.out.println("↓↓↓ 正規化後の値 ↓↓↓");
-		for(int i=0; i < windowSize; i++){
+		for (int i = 0; i < windowSize; i++) {
 			double w_FI6001_STATE = this.predictDataW[0][i][3];
 			double w_PLC31_PAR_AI0083 = this.predictDataW[0][i][6];
 			double wt_PLC31_PAR_AI0083 = this.predictDataWT[0][i][1];
-			System.out.print( w_FI6001_STATE + "  " );
-			System.out.print( w_PLC31_PAR_AI0083 + "  " );
-			System.out.println( wt_PLC31_PAR_AI0083 );
+			System.out.print(w_FI6001_STATE + "  ");
+			System.out.print(w_PLC31_PAR_AI0083 + "  ");
+			System.out.println(wt_PLC31_PAR_AI0083);
 		}
 		// ↑↑↑↑  簡易テストコード  ↑↑↑↑
 	}
 
-
-
-	private boolean isNormalRec(String[] orgRec){
-		for( Integer col : this.colIndexes ){
-			if( this.learningDataColToCol.containsKey(col) ){
+	private boolean isNormalRec(String[] orgRec) {
+		for (Integer col : this.colIndexes) {
+			if (this.learningDataColToCol.containsKey(col)) {
 				NormalNormalize nn = (NormalNormalize) this.colDnMap.get(colIndexes.indexOf(col));
-				if( ! nn.isNormalRange( Double.parseDouble( orgRec[ (int) this.learningDataColToCol.get(col) ] ) ) ){
+				if (!nn.isNormalRange(Double.parseDouble(orgRec[(int) this.learningDataColToCol.get(col)]))) {
 					return false;
 				}
 			}
 		}
 		return true;
 	}
-	
-	int getPredictDataSize(){
+
+	int getPredictDataSize() {
 		return this.predictDataSize;
 	}
 
-	int getPredictDataSize_window(){
+	int getPredictDataSize_window() {
 		return this.predictDataSize_window;
 	}
 
-	double[][][] getPredictOriginDataW(){
+	double[][][] getPredictOriginDataW() {
 		return this.predictOriginDataW;
 	}
 
-	double[][][] getPredictOriginDataWT(){
+	double[][][] getPredictOriginDataWT() {
 		return this.predictOriginDataWT;
 	}
 
-	double[][][] getPredictDataW(){
+	double[][][] getPredictDataW() {
 		return this.predictDataW;
 	}
 
-	double[][][] getPredictDataWT(){
+	double[][][] getPredictDataWT() {
 		return this.predictDataWT;
 	}
 
-	String[][] getPredictDatetimesWT(){
+	String[][] getPredictDatetimesWT() {
 		return this.predictDatetimesWT;
 	}
 
-	String[][] getPredictCoDatetimesWT(){
+	String[][] getPredictCoDatetimesWT() {
 		return this.predictCoDatetimesWT;
 	}
+
 }
 
-
-class ParseDateTime{
+class ParseDateTime {
 	int year;
 	int month;
 	int day;
@@ -630,108 +643,111 @@ class ParseDateTime{
 	String sHour;
 	String sMinutes;
 	String sSecond;
-	LocalDateTime datetime; 
-	
-	ParseDateTime(String datetime){
+	LocalDateTime datetime;
+
+	ParseDateTime(String datetime) {
 		String[] datetimeParts = this.sepDT(datetime);
 		String date = datetimeParts[0];
 		String time = datetimeParts[1];
-		
+
 		String[] dateParts = this.sepD01(date);
 		this.sYear = dateParts[0];
 		this.sMonth = dateParts[1];
 		this.sDay = dateParts[2];
-		
+
 		String[] timeParts = this.sepT(time);
 		this.sHour = timeParts[0];
 		this.sMinutes = timeParts[1];
 		this.sSecond = timeParts[2];
-		
+
 		this.year = Integer.parseInt(this.sYear);
 		this.month = Integer.parseInt(this.sMonth);
 		this.day = Integer.parseInt(this.sDay);
 		this.hour = Integer.parseInt(this.sHour);
 		this.minutes = Integer.parseInt(this.sMinutes);
 		this.second = Integer.parseInt(this.sSecond);
-		
+
 		this.datetime = LocalDateTime.of(this.year, this.month, this.day, this.hour, this.minutes, this.second);
 	}
-	
+
 	private String[] sepDT(String datetime) {
 		String[] datetimeParts = datetime.split(" ");
 		return datetimeParts;
 	}
-	
+
 	private String[] sepD01(String date) {
 		String[] dateParts = date.split("-");
 		return dateParts;
 	}
-	
+
+	@SuppressWarnings("unused")
 	private String[] sepD02(String date) {
 		String[] dateParts = date.split("/");
 		return dateParts;
 	}
-	
+
 	private String[] sepT(String time) {
 		String[] timeParts = time.split(":");
 		return timeParts;
 	}
 
-	public boolean le(LocalDateTime ldt){
+	public boolean le(LocalDateTime ldt) {
 		return this.datetime.isBefore(ldt) || this.datetime.isEqual(ldt);
 	}
 
-	public boolean gt(LocalDateTime ldt){
+	public boolean gt(LocalDateTime ldt) {
 		return this.datetime.isAfter(ldt);
 	}
 
-	public static LocalDateTime getNextDT(LocalDateTime ldt, int minutes){
+	public static LocalDateTime getNextDT(LocalDateTime ldt, int minutes) {
 		ldt = ldt.minusSeconds(ldt.getSecond());
 		ldt = ldt.minusNanos(ldt.getNano());
 		ldt = ldt.plusMinutes(1); // 早めに起動して[60, 0) 分以上前にこのメソッドが呼び出される前提
 
-		for(int iMin=0; iMin < 60; iMin++){
-			if( ( ldt.plusMinutes(iMin) ).getMinute() == minutes ){
+		for (int iMin = 0; iMin < 60; iMin++) {
+			if ((ldt.plusMinutes(iMin)).getMinute() == minutes) {
 				return ldt.plusMinutes(iMin);
 			}
 		}
-		
+
 		throw new RuntimeException("次の予測時刻が見つかりませんでした");
 	}
 
-	public static String fTime(LocalDateTime ldt){
+	public static String fTime(LocalDateTime ldt) {
 		return ldt.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
 	}
+
 }
 
-class RecSource{
+class RecSource {
 	ParseDateTime pdt;
 	String[] orgRec;
 	String coDT;
 	int recIndex;
 
-	RecSource(ParseDateTime pdt, String[] orgRec, String coDT, int recIndex){
+	RecSource(ParseDateTime pdt, String[] orgRec, String coDT, int recIndex) {
 		this.pdt = pdt;
 		this.orgRec = orgRec;
 		this.coDT = coDT;
 		this.recIndex = recIndex;
 	}
+
 }
 
-class CalcRadian{
+class CalcRadian {
 
-	public static double getDateRadian(LocalDateTime ldt){
-		LocalDateTime curYearStart = LocalDateTime.of(ldt.getYear(),1,1,0,0,0,0);
-		LocalDateTime nextYearStart = LocalDateTime.of(ldt.getYear()+1,1,1,0,0,0,0);
+	public static double getDateRadian(LocalDateTime ldt) {
+		LocalDateTime curYearStart = LocalDateTime.of(ldt.getYear(), 1, 1, 0, 0, 0, 0);
+		LocalDateTime nextYearStart = LocalDateTime.of(ldt.getYear() + 1, 1, 1, 0, 0, 0, 0);
 		long daysOfYear = curYearStart.until(nextYearStart, ChronoUnit.DAYS);
-		System.out.println( ldt.getYear() + "年は" + daysOfYear + "日です。" );
-		return 2.0D * Math.PI * ( (double) ldt.getDayOfYear() - 1.0D ) / (double) daysOfYear;
+		System.out.println(ldt.getYear() + "年は" + daysOfYear + "日です。");
+		return 2.0D * Math.PI * ((double) ldt.getDayOfYear() - 1.0D) / (double) daysOfYear;
 	}
 
-	public static double getTimeRadian(LocalDateTime ldt){
-		LocalDateTime curDayStart = LocalDateTime.of(ldt.getYear(),ldt.getMonthValue(),ldt.getDayOfMonth(),0,0,0,0);
+	public static double getTimeRadian(LocalDateTime ldt) {
+		LocalDateTime curDayStart = LocalDateTime.of(ldt.getYear(), ldt.getMonthValue(), ldt.getDayOfMonth(), 0, 0, 0,
+				0);
 		return 2.0D * Math.PI * (double) curDayStart.until(ldt, ChronoUnit.MINUTES) / (double) (24 * 60);
 	}
 
 }
-

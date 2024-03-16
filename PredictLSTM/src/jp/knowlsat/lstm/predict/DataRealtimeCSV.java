@@ -8,15 +8,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class DataRealtimeCSV {
-    public String network_path;
-    public ArrayList<String[]> rTimeRecs = null;
+	public String network_path;
+	public ArrayList<String[]> rTimeRecs = null;
 
-    public DataRealtimeCSV(String network_path) {
-        this.network_path = network_path;
-        this.rTimeRecs = new ArrayList<>();
-    }
+	public DataRealtimeCSV(String network_path) {
+		this.network_path = network_path;
+		this.rTimeRecs = new ArrayList<>();
+	}
 
-    public int setListCSV() {
+	public int setListCSV() {
 		File dir = new File(network_path);
 		File[] files = dir.listFiles();
 
@@ -27,37 +27,37 @@ public class DataRealtimeCSV {
 				BufferedReader bufferedReader;
 				String[] items;
 
-                try {
+				try {
 					fileReader = new FileReader(file);
 					bufferedReader = new BufferedReader(fileReader);
 					bufferedReader.readLine(); // ヘッダ行は読み飛ばし
-                    String line = null;
+					String line = null;
 
-                    while ((line = bufferedReader.readLine()) != null) {
-					    items = line.split(",");
-                        rTimeRecs.add(items);
-                    }
+					while ((line = bufferedReader.readLine()) != null) {
+						items = line.split(",");
+						rTimeRecs.add(items);
+					}
 				} catch (IOException e) {
 					System.out.println("Failed to open file. " + e.getMessage());
 					return -1;
 				}
 
-                try {
+				try {
 					bufferedReader.close();
 				} catch (IOException e) {
 					System.out.println("Failed to close file. " + e.getMessage());
 					return -2;
 				}
 			}
-        }
+		}
 
-        return 0;
-    }
+		return 0;
+	}
 
-    public ArrayList<String[]> getListCSV() {
-        Collections.reverse(rTimeRecs);
+	public ArrayList<String[]> getListCSV() {
+		Collections.reverse(rTimeRecs);
 
-        return rTimeRecs;
-    }
+		return rTimeRecs;
+	}
 
 }

@@ -10,45 +10,27 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public class LSTM_Input {
-	public static final String INPUT_PATH = "output\\input";
+public class LSTM_PrevStatistics {
+	public static final String STATISTICS_PATH = "output\\statistics";
 
 	public int WindowSize;
-	public int DataType;
-	public int nOut;
-	public int targetIndex;
 	public String minute;
 
-	public double[][] z_train;
-	public double[][] z_target;
-	public boolean[] z_flag;
-	public String[] z_datetimes;
 	public String[] z_coDatetimes;
-	public boolean incident;
 	public LSTM_Date lstm_date;
 
-	public LSTM_Input(int WindowSize, int DataType, int nOut, int targetIndex, String minute) {
+	public String prev_date;
+	public double prev_inv_p;
+	public boolean prev_incident;
+
+	public LSTM_PrevStatistics(int WindowSize, String minute) {
 		this.WindowSize = WindowSize;
-		this.DataType = DataType;
-		this.nOut = nOut;
-		this.targetIndex = targetIndex;
 		this.minute = minute;
 
-		z_train = new double[WindowSize][DataType];
-		z_target = new double[WindowSize][nOut];
-		z_flag = new boolean[WindowSize];
-		z_datetimes = new String[WindowSize];
 		z_coDatetimes = new String[WindowSize];
 	}
 
-	public int set(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
-			String[] z_coDatetimes, boolean incident) {
-		this.z_train = z_train;
-		this.z_target = z_target;
-		this.z_flag = z_flag;
-		this.z_datetimes = z_datetimes;
-		this.z_coDatetimes = z_coDatetimes;
-		this.incident = incident;
+	public int set(String[] z_coDatetimes) {
 		String year = z_coDatetimes[WindowSize - 1].substring(0, 4);
 		String month = z_coDatetimes[WindowSize - 1].substring(5, 7);
 		String day = z_coDatetimes[WindowSize - 1].substring(8, 10);
@@ -101,12 +83,13 @@ public class LSTM_Input {
 	}
 
 	public int load(LSTM_Date date, int offset) {
-		String input_path_str = INPUT_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
-		String startFiles = input_path_str + "\\" + "I_" + date.year + date.month + date.day + date.hour + date.minute
+		String statistics_path_str = STATISTICS_PATH + "\\" + date.year + "\\" + date.month + "\\" + date.day;
+		String startFiles = statistics_path_str + "\\" + "S_" + date.year + date.month + date.day + date.hour
+				+ date.minute
 				+ "_";
 
 		ArrayList<File> csvFiles = new ArrayList<File>();
-		File dir = new File(input_path_str);
+		File dir = new File(statistics_path_str);
 		File[] files = dir.listFiles();
 
 		if (files != null) {
@@ -136,8 +119,8 @@ public class LSTM_Input {
 			}
 
 			if (fileIndex != -1) {
-				Path input_path = Path.of(csvFiles.get(fileIndex).toString());
-				File file = input_path.toFile();
+				Path statistics_path = Path.of(csvFiles.get(fileIndex).toString());
+				File file = statistics_path.toFile();
 				FileReader fileReader;
 				BufferedReader bufferedReader;
 				String[] items;
@@ -153,7 +136,9 @@ public class LSTM_Input {
 					return -1;
 				}
 
-				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 予測値を格納
+				prev_date = items[0]; // 前回時刻を格納
+				prev_inv_p = Double.parseDouble(items[1]); // 前回予測値を格納
+				prev_incident = Boolean.parseBoolean(items[items.length - 1]); // 前回インシデントを格納
 
 				try {
 					bufferedReader.close();
