@@ -129,6 +129,7 @@ public class LSTM_Output {
 		System.out.print(",");
 		System.out.print(prev_incident);
 		System.out.println();
+		System.out.println();
 	}
 
 	public int outputInputCSV() {

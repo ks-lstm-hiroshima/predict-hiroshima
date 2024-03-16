@@ -40,7 +40,7 @@ public class DataSetting {
 	public double[][] data;
 
 	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
-			int dataNumForTest, ArrayList<String[]> rTimeRecs)
+			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed)
 			throws IOException {
 
 		this.inputSize = inputSize;
@@ -170,7 +170,7 @@ public class DataSetting {
 		}
 
 		RealDataSetting rds = new RealDataSetting(rTimeRecs, test_mode, colIndexes, timeColIndexes, datetimeColIndex,
-				targetColIndexes, colDnMap, this.windowSize, dataNumForTest);
+				targetColIndexes, colDnMap, this.windowSize, dataNumForTest, passed);
 
 		this.predictDataSize = rds.getPredictDataSize();
 		this.predictDataSize_window = rds.getPredictDataSize_window();
@@ -287,7 +287,8 @@ class RealDataSetting {
 
 	RealDataSetting(ArrayList<String[]> rTimeRecs, int test_mode, List<Integer> colIndexes,
 			List<Integer> timeColIndexes, int datetimeColIndex, List<Integer> targetColIndexes,
-			HashMap<Integer, DataNormalize> colDnMap, int windowSize, int dataNumForTest) {
+			HashMap<Integer, DataNormalize> colDnMap, int windowSize, int dataNumForTest,
+			int passed) {
 		this.colIndexes = colIndexes;
 		this.colDnMap = colDnMap;
 
@@ -306,6 +307,11 @@ class RealDataSetting {
 
 		LocalDateTime nowDT = LocalDateTime.now();
 		nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
+
+		if (passed != 0) {
+			nowDT = nowDT.minusHours(passed);
+		}
+
 		System.out.print("起動時刻は :  ");
 		System.out.println(nowDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 		System.out.println(nowDT.getNano() + "ナノ秒");

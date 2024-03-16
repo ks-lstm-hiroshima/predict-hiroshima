@@ -137,13 +137,12 @@ public class LSTM {
 
 		int passed = 0;
 		int test_size = 1; // not changed
-		int dataNumForTest = passed + test_size;
 
 		ArrayList<String[]> rTimeRecs = csv.getListCSV();
 		DataSetting ds = null;
 		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest,
-					rTimeRecs);
+			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, test_size,
+					rTimeRecs, passed);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
@@ -164,9 +163,9 @@ public class LSTM {
 		lstm.prev = new LSTM_PrevStatistics(windowSize, minute);
 
 		// -- predict start --
-		for (int test_index = passed; test_index >= 0; test_index--) {
+		for (int test_index = passed; test_index > passed - test_size; test_index--) {
 			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType,
-					ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index);
+					ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, 0);
 
 			lstm.prev.set(dm.z_coDatetimes[dm.z_coDatetimes.length - 1]);
 			lstm.prev.allLoad();
