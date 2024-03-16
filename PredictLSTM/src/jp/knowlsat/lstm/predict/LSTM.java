@@ -170,8 +170,13 @@ public class LSTM {
 			lstm.prev.set(dm.z_coDatetimes[dm.z_coDatetimes.length - 1]);
 			lstm.prev.allLoad();
 
+			input.set(dm.z_train[dm.z_train.length - 1], dm.z_target[dm.z_target.length - 1],
+					dm.z_flag[dm.z_flag.length - 1], dm.z_datetimes[dm.z_datetimes.length - 1],
+					dm.z_coDatetimes[dm.z_coDatetimes.length - 1], false);
+			input.allLoad();
+
 			// アンモニア処理追加 start
-			System.out.println("--- Ammonia log Start ---");
+			System.out.println("--- Ammonia Process Start ---");
 			NormalNormalize nn = (NormalNormalize) ds.colDnMap.get(18);
 
 			for (int i = windowSize - 1; i >= 0; i--) {
@@ -179,20 +184,18 @@ public class LSTM {
 					continue;
 				}
 
-				dm.z_train[dm.z_train.length - 1][windowSize - 1 - i][18] = nn.normalize(lstm.prev.prev_ammonia.get(i));
-				System.out.print(i);
-				System.out.print(":");
-				System.out.print(lstm.prev.prev_ammonia.get(i));
-				System.out.print("->");
-				System.out.println(dm.z_train[dm.z_train.length - 1][windowSize - 1 - i][18]);
-			}
-			System.out.println("--- Ammonia log End ---");
-			// アンモニア処理追加 end
+				ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18] = nn
+						.inv(input.z_train[input.z_train.length - 1][18]);
 
-			input.set(dm.z_train[dm.z_train.length - 1], dm.z_target[dm.z_target.length - 1],
-					dm.z_flag[dm.z_flag.length - 1], dm.z_datetimes[dm.z_datetimes.length - 1],
-					dm.z_coDatetimes[dm.z_coDatetimes.length - 1], false);
-			input.allLoad();
+				System.out.print("[Prev index: ");
+				System.out.print(i);
+				System.out.print("] NP : ");
+				System.out.print(input.z_train[input.z_train.length - 1][18]);
+				System.out.print(" -> inv: ");
+				System.out.println(ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18]);
+			}
+			System.out.println("--- Ammonia Process End ---");
+			// アンモニア処理追加 end
 
 			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
 					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1]);
