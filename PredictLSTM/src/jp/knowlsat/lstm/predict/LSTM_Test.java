@@ -35,6 +35,9 @@ public class LSTM_Test {
 					lstm.prev.prev_incident.get(lstm.prev.prev_incident.size() - 1));
 		}
 
+		output.setPrevRealNakajia(lstm.origin_z_target[lstm.window - 2][1]);
+		output.setError();
+
 		output.print();
 		output.outputInputCSV();
 		output.outputStatisticsCSV();

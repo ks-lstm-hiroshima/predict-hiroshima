@@ -30,10 +30,11 @@ public class LSTM {
 	public String minute;
 
 	public double[][] origin_z_train;
+	public double[][] origin_z_target;
 	public LSTM_PrevStatistics prev;
 
 	public void setData(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
-			String[] z_coDatetimes, boolean incident, double[][] origin_z_train) {
+			String[] z_coDatetimes, boolean incident, double[][] origin_z_train, double[][] origin_z_target) {
 		this.z_train = z_train;
 		this.z_target = z_target;
 		this.z_flag = z_flag;
@@ -41,6 +42,7 @@ public class LSTM {
 		this.z_coDatetimes = z_coDatetimes;
 		this.incident = incident;
 		this.origin_z_train = origin_z_train;
+		this.origin_z_target = origin_z_target;
 	}
 
 	public LSTM(int Layers, int window, int nIn, int nHidden, int nOut, int targetIndex, int peephole_mode,
@@ -198,7 +200,8 @@ public class LSTM {
 			// アンモニア処理追加 end
 
 			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
-					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1]);
+					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1],
+					ds.predictOriginDataWT[ds.predictOriginDataWT.length - 1]);
 			LSTM_Test.test(lstm);
 		}
 		// -- predict end --

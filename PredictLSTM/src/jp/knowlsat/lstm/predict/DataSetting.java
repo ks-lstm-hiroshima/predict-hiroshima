@@ -181,6 +181,7 @@ public class DataSetting {
 		this.predictCoDatetimesWT = rds.getPredictCoDatetimesWT();
 
 		this.predictOriginDataW = rds.getPredictOriginDataW();
+		this.predictOriginDataWT = rds.getPredictOriginDataWT();
 	}
 
 	public int getDataTypeSize() {
