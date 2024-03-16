@@ -169,6 +169,26 @@ public class LSTM {
 
 			lstm.prev.set(dm.z_coDatetimes[dm.z_coDatetimes.length - 1]);
 			lstm.prev.allLoad();
+
+			// アンモニア処理追加 start
+			System.out.println("--- Ammonia log Start ---");
+			NormalNormalize nn = (NormalNormalize) ds.colDnMap.get(18);
+
+			for (int i = windowSize - 1; i >= 0; i--) {
+				if (i >= lstm.prev.prev_ammonia.size()) {
+					continue;
+				}
+
+				dm.z_train[dm.z_train.length - 1][windowSize - 1 - i][18] = nn.normalize(lstm.prev.prev_ammonia.get(i));
+				System.out.print(i);
+				System.out.print(":");
+				System.out.print(lstm.prev.prev_ammonia.get(i));
+				System.out.print("->");
+				System.out.println(dm.z_train[dm.z_train.length - 1][windowSize - 1 - i][18]);
+			}
+			System.out.println("--- Ammonia log End ---");
+			// アンモニア処理追加 end
+
 			input.set(dm.z_train[dm.z_train.length - 1], dm.z_target[dm.z_target.length - 1],
 					dm.z_flag[dm.z_flag.length - 1], dm.z_datetimes[dm.z_datetimes.length - 1],
 					dm.z_coDatetimes[dm.z_coDatetimes.length - 1], false);

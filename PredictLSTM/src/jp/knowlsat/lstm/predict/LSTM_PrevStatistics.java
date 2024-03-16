@@ -19,15 +19,20 @@ public class LSTM_PrevStatistics {
 	public String[] z_coDatetimes;
 	public LSTM_Date lstm_date;
 
-	public String prev_date;
-	public double prev_inv_p;
-	public boolean prev_incident;
+	public ArrayList<String> prev_date;
+	public ArrayList<Double> prev_inv_p;
+	public ArrayList<Double> prev_ammonia;
+	public ArrayList<Boolean> prev_incident;
 
 	public LSTM_PrevStatistics(int WindowSize, String minute) {
 		this.WindowSize = WindowSize;
 		this.minute = minute;
 
 		z_coDatetimes = new String[WindowSize];
+		prev_date = new ArrayList<String>();
+		prev_inv_p = new ArrayList<Double>();
+		prev_ammonia = new ArrayList<Double>();
+		prev_incident = new ArrayList<Boolean>();
 	}
 
 	public int set(String[] z_coDatetimes) {
@@ -136,9 +141,10 @@ public class LSTM_PrevStatistics {
 					return -1;
 				}
 
-				prev_date = items[0]; // 前回時刻を格納
-				prev_inv_p = Double.parseDouble(items[1]); // 前回予測値を格納
-				prev_incident = Boolean.parseBoolean(items[items.length - 1]); // 前回インシデントを格納
+				prev_date.add(items[0]); // 前回時刻を格納
+				prev_inv_p.add(Double.parseDouble(items[1])); // 前回予測値を格納
+				prev_ammonia.add(Double.parseDouble(items[items.length - 2])); // 前回正規化前アンモニアを格納
+				prev_incident.add(Boolean.parseBoolean(items[items.length - 1])); // 前回インシデントを格納
 
 				try {
 					bufferedReader.close();

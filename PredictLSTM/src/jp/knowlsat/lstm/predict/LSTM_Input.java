@@ -153,7 +153,9 @@ public class LSTM_Input {
 					return -1;
 				}
 
-				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 予測値を格納
+				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 正規化中次亜予測値を格納
+				z_train[WindowSize - 1 + offset][18] = Double.parseDouble(items[3]); // 正規化アンモニアを格納
+				z_flag[WindowSize - 1 + offset] = Boolean.parseBoolean(items[2]); // 取水状態フラグを格納
 
 				try {
 					bufferedReader.close();

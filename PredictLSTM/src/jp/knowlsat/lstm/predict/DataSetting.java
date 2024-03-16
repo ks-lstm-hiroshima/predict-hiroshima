@@ -38,6 +38,7 @@ public class DataSetting {
 	public String[][] predictCoDatetimesWT;
 
 	public double[][] data;
+	public HashMap<Integer, DataNormalize> colDnMap;
 
 	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
 			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed)
@@ -112,7 +113,7 @@ public class DataSetting {
 		this.data = new double[numOfParam][];
 
 		this.targetDnList = new ArrayList<>(targetArrayIndexes.size());
-		HashMap<Integer, DataNormalize> colDnMap = new HashMap<>(colIndexes.size() + 1, 1.0f); // ArrayListの方が良い。
+		colDnMap = new HashMap<>(colIndexes.size() + 1, 1.0f); // ArrayListの方が良い。
 
 		for (int i = 0; i < numOfParam; i++) {
 			DataNormalize dn;

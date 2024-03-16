@@ -29,7 +29,12 @@ public class LSTM_Test {
 				lstm.z_datetimes[lstm.window - 1], lstm.z_coDatetimes[lstm.window - 1],
 				lstm.incident, lstm.minute, lstm.z_train, lstm.origin_z_train);
 
-		output.setPrevResult(lstm.prev.prev_date, lstm.prev.prev_inv_p, lstm.prev.prev_incident);
+		if (lstm.prev.prev_date.size() != 0) {
+			output.setPrevResult(lstm.prev.prev_date.get(lstm.prev.prev_date.size() - 1),
+					lstm.prev.prev_inv_p.get(lstm.prev.prev_inv_p.size() - 1),
+					lstm.prev.prev_incident.get(lstm.prev.prev_incident.size() - 1));
+		}
+
 		output.print();
 		output.outputInputCSV();
 		output.outputStatisticsCSV();

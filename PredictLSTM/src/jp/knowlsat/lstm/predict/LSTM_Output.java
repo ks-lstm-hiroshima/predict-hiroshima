@@ -1,6 +1,8 @@
 package jp.knowlsat.lstm.predict;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -117,19 +119,24 @@ public class LSTM_Output {
 		System.out.println();
 
 		System.out.println("--- 前回実施の予測実行結果 ---");
-		System.out.print("予測時刻");
-		System.out.print(",");
-		System.out.print("中次亜塩素酸注入率予測値（正規化前）");
-		System.out.print(",");
-		System.out.print("インシデント発生フラグ（false：正常, true：異常）");
-		System.out.println();
-		System.out.print(prev_z_coDatetime);
-		System.out.print(",");
-		System.out.print(prev_inv_p);
-		System.out.print(",");
-		System.out.print(prev_incident);
-		System.out.println();
-		System.out.println();
+
+		if (prev_z_coDatetime != null) {
+			System.out.print("予測時刻");
+			System.out.print(",");
+			System.out.print("中次亜塩素酸注入率予測値（正規化前）");
+			System.out.print(",");
+			System.out.print("インシデント発生フラグ（false：正常, true：異常）");
+			System.out.println();
+			System.out.print(prev_z_coDatetime);
+			System.out.print(",");
+			System.out.print(prev_inv_p);
+			System.out.print(",");
+			System.out.print(prev_incident);
+			System.out.println();
+			System.out.println();
+		} else {
+			System.out.println("前回実施の予測結果はありません");
+		}
 	}
 
 	public int outputInputCSV() {
@@ -156,6 +163,8 @@ public class LSTM_Output {
 			fileWriter.write(",");
 			fileWriter.write("onJudge");
 			fileWriter.write(",");
+			fileWriter.write("ammonia");
+			fileWriter.write(",");
 			fileWriter.write("incident");
 			fileWriter.write("\n");
 			fileWriter.write(z_coDatetime);
@@ -163,6 +172,8 @@ public class LSTM_Output {
 			fileWriter.write(Double.toString(next));
 			fileWriter.write(",");
 			fileWriter.write(Boolean.toString(onJudge));
+			fileWriter.write(",");
+			fileWriter.write(Double.toString(getAmmoniaNP()));
 			fileWriter.write(",");
 			fileWriter.write(Boolean.toString(incident));
 			fileWriter.write("\n");
@@ -283,6 +294,17 @@ public class LSTM_Output {
 		}
 
 		return 0;
+	}
+
+	public static double getAmmoniaNP() throws IOException {
+		String fileName = "setting/setting_per_Ammonia.txt";
+		File file = new File(fileName);
+		FileReader fileReader = new FileReader(file);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		String text = bufferedReader.readLine();
+		bufferedReader.close();
+
+		return Double.parseDouble(text);
 	}
 
 }
