@@ -17,6 +17,7 @@ public class LSTM_Input {
 	public int DataType;
 	public int nOut;
 	public int targetIndex;
+	public int ammoniaIndex;
 	public String minute;
 
 	public double[][] z_train;
@@ -27,11 +28,12 @@ public class LSTM_Input {
 	public boolean incident;
 	public LSTM_Date lstm_date;
 
-	public LSTM_Input(int WindowSize, int DataType, int nOut, int targetIndex, String minute) {
+	public LSTM_Input(int WindowSize, int DataType, int nOut, int targetIndex, int ammoniaIndex, String minute) {
 		this.WindowSize = WindowSize;
 		this.DataType = DataType;
 		this.nOut = nOut;
 		this.targetIndex = targetIndex;
+		this.ammoniaIndex = ammoniaIndex;
 		this.minute = minute;
 
 		z_train = new double[WindowSize][DataType];
@@ -153,7 +155,9 @@ public class LSTM_Input {
 					return -1;
 				}
 
-				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 予測値を格納
+				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 正規化中次亜予測値を格納
+				z_train[WindowSize - 1 + offset][this.ammoniaIndex] = Double.parseDouble(items[3]); // 正規化アンモニアを格納
+				z_flag[WindowSize - 1 + offset] = Boolean.parseBoolean(items[2]); // 取水状態フラグを格納
 
 				try {
 					bufferedReader.close();

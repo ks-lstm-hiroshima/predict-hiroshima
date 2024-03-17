@@ -30,10 +30,11 @@ public class LSTM {
 	public String minute;
 
 	public double[][] origin_z_train;
+	public double[][] origin_z_target;
 	public LSTM_PrevStatistics prev;
 
 	public void setData(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
-			String[] z_coDatetimes, boolean incident, double[][] origin_z_train) {
+			String[] z_coDatetimes, boolean incident, double[][] origin_z_train, double[][] origin_z_target) {
 		this.z_train = z_train;
 		this.z_target = z_target;
 		this.z_flag = z_flag;
@@ -41,6 +42,7 @@ public class LSTM {
 		this.z_coDatetimes = z_coDatetimes;
 		this.incident = incident;
 		this.origin_z_train = origin_z_train;
+		this.origin_z_target = origin_z_target;
 	}
 
 	public LSTM(int Layers, int window, int nIn, int nHidden, int nOut, int targetIndex, int peephole_mode,
@@ -135,15 +137,15 @@ public class LSTM {
 		int test_mode = Integer.parseInt(settings.getProperty("test_mode"));
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
 
+		boolean debug = false;
 		int passed = 0;
 		int test_size = 1; // not changed
-		int dataNumForTest = passed + test_size;
 
 		ArrayList<String[]> rTimeRecs = csv.getListCSV();
 		DataSetting ds = null;
 		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, dataNumForTest,
-					rTimeRecs);
+			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, test_size,
+					rTimeRecs, passed, debug);
 		} catch (IOException e) {
 			System.out.println(e.toString());
 			System.exit(-1);
@@ -160,23 +162,56 @@ public class LSTM {
 				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
 		LSTM_Load.load(lstm);
 		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
-				minute);
+				ds.ammoniaIndexInParams, minute);
 		lstm.prev = new LSTM_PrevStatistics(windowSize, minute);
 
 		// -- predict start --
-		for (int test_index = passed; test_index >= 0; test_index--) {
+		for (int test_index = passed; test_index > passed - test_size; test_index--) {
 			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType,
-					ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, test_index);
+					ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, 0);
 
 			lstm.prev.set(dm.z_coDatetimes[dm.z_coDatetimes.length - 1]);
 			lstm.prev.allLoad();
+
 			input.set(dm.z_train[dm.z_train.length - 1], dm.z_target[dm.z_target.length - 1],
 					dm.z_flag[dm.z_flag.length - 1], dm.z_datetimes[dm.z_datetimes.length - 1],
 					dm.z_coDatetimes[dm.z_coDatetimes.length - 1], false);
 			input.allLoad();
 
+			// アンモニア処理追加 start
+			if (debug) {
+				System.out.println("--- Ammonia Process Start ---");
+			}
+			NormalNormalize nn = (NormalNormalize) ds.colDnMap.get(ds.ammoniaIndexInParams);
+
+			for (int i = windowSize - 1; i >= 0; i--) {
+				if (i >= lstm.prev.prev_ammonia.size()) {
+					continue;
+				}
+
+				ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1
+						- i][ds.ammoniaIndexInParams] = nn
+								.inv(input.z_train[input.z_train.length - 1][ds.ammoniaIndexInParams]);
+
+				if (debug) {
+					System.out.print("[Prev index: ");
+					System.out.print(i);
+					System.out.print("] NP : ");
+					System.out.print(input.z_train[input.z_train.length - 1][ds.ammoniaIndexInParams]);
+					System.out.print(" -> inv: ");
+					System.out.println(ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1
+							- i][ds.ammoniaIndexInParams]);
+				}
+			}
+
+			if (debug) {
+				System.out.println("--- Ammonia Process End ---");
+			}
+			// アンモニア処理追加 end
+
 			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
-					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1]);
+					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1],
+					ds.predictOriginDataWT[ds.predictOriginDataWT.length - 1]);
 			LSTM_Test.test(lstm);
 		}
 		// -- predict end --

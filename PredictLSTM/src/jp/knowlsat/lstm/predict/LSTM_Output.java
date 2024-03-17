@@ -1,6 +1,8 @@
 package jp.knowlsat.lstm.predict;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,6 +26,7 @@ public class LSTM_Output {
 	public String prev_z_coDatetime; // 前回定刻日時
 	public double prev_inv_p; // 前回予測値
 	public boolean prev_incident; // 前回インシデント
+	public double prev_real_nakajia; // 前回実測値
 
 	public String year;
 	public String month;
@@ -33,9 +36,14 @@ public class LSTM_Output {
 	public Path input_path;
 	public Path statistics_path;
 
+	public double prev_e; // 前回誤差
+	public double prev_PredictSquaredError; // 前回二乗誤差
+	public double prev_per; // 前回%誤差
+
+	public boolean z_flag; // 取水フラグ
+
 	//	public String z_datetime; // 日時
 	//	public double inv_t; // 実測値
-	//	public boolean z_flag; // 取水フラグ
 	//	public double e; // 誤差
 	//	public double PredictSquaredError; // 二乗誤差
 	//	public double per; // %誤差
@@ -55,9 +63,10 @@ public class LSTM_Output {
 		this.input = input;
 		this.origin_input = origin_input;
 
+		this.z_flag = z_flag;
+
 		// this.z_datetime = z_datetime;
 		// this.inv_t = inv_t;
-		// this.z_flag = z_flag;
 		// this.e = e;
 		// this.PredictSquaredError = PredictSquaredError;
 		// this.per = per;
@@ -72,6 +81,32 @@ public class LSTM_Output {
 		this.prev_z_coDatetime = prev_z_coDatetime;
 		this.prev_inv_p = prev_inv_p;
 		this.prev_incident = prev_incident;
+	}
+
+	public void setPrevRealNakajia(double prev_real_nakajia) {
+		this.prev_real_nakajia = prev_real_nakajia;
+	}
+
+	public void setError() {
+		if (prev_z_coDatetime != null) {
+			if (!z_flag) {
+				prev_e = 0.0;
+				prev_PredictSquaredError = 0.0;
+				prev_per = 0.0;
+			} else if (prev_real_nakajia != 0.0) {
+				prev_e = prev_inv_p - prev_real_nakajia;
+				prev_PredictSquaredError = prev_e * prev_e;
+				prev_per = (prev_inv_p - prev_real_nakajia) * 100.0 / prev_real_nakajia;
+			} else {
+				prev_e = prev_inv_p - prev_real_nakajia;
+				prev_PredictSquaredError = prev_e * prev_e;
+				prev_per = 100.0;
+			}
+		} else {
+			prev_e = 0.0;
+			prev_PredictSquaredError = 0.0;
+			prev_per = 0.0;
+		}
 	}
 
 	public void setInputPath() {
@@ -117,17 +152,43 @@ public class LSTM_Output {
 		System.out.println();
 
 		System.out.println("--- 前回実施の予測実行結果 ---");
-		System.out.print("予測時刻");
+
+		if (prev_z_coDatetime != null) {
+			System.out.print("予測時刻");
+			System.out.print(",");
+			System.out.print("中次亜塩素酸注入率予測値（正規化前）");
+			System.out.print(",");
+			System.out.print("インシデント発生フラグ（false：正常, true：異常）");
+			System.out.println();
+			System.out.print(prev_z_coDatetime);
+			System.out.print(",");
+			System.out.print(prev_inv_p);
+			System.out.print(",");
+			System.out.print(prev_incident);
+			System.out.println();
+			System.out.println();
+		} else {
+			System.out.println("前回実施の予測結果はありません");
+			System.out.println();
+		}
+
+		System.out.println("--- 前回実施の中次亜実測値および誤差情報 ---");
+		System.out.print("実測値（正規化前）");
 		System.out.print(",");
-		System.out.print("中次亜塩素酸注入率予測値（正規化前）");
+		System.out.print("予測誤差");
 		System.out.print(",");
-		System.out.print("インシデント発生フラグ（false：正常, true：異常）");
+		System.out.print("二乗誤差");
+		System.out.print(",");
+		System.out.print("％誤差");
 		System.out.println();
-		System.out.print(prev_z_coDatetime);
+		System.out.print(prev_real_nakajia);
 		System.out.print(",");
-		System.out.print(prev_inv_p);
+		System.out.print(prev_e);
 		System.out.print(",");
-		System.out.print(prev_incident);
+		System.out.print(prev_PredictSquaredError);
+		System.out.print(",");
+		System.out.print(prev_per);
+		System.out.println();
 		System.out.println();
 	}
 
@@ -155,6 +216,8 @@ public class LSTM_Output {
 			fileWriter.write(",");
 			fileWriter.write("onJudge");
 			fileWriter.write(",");
+			fileWriter.write("ammonia");
+			fileWriter.write(",");
 			fileWriter.write("incident");
 			fileWriter.write("\n");
 			fileWriter.write(z_coDatetime);
@@ -162,6 +225,8 @@ public class LSTM_Output {
 			fileWriter.write(Double.toString(next));
 			fileWriter.write(",");
 			fileWriter.write(Boolean.toString(onJudge));
+			fileWriter.write(",");
+			fileWriter.write(Double.toString(getAmmoniaNP()));
 			fileWriter.write(",");
 			fileWriter.write(Boolean.toString(incident));
 			fileWriter.write("\n");
@@ -282,6 +347,17 @@ public class LSTM_Output {
 		}
 
 		return 0;
+	}
+
+	public static double getAmmoniaNP() throws IOException {
+		String fileName = "setting/setting_per_Ammonia.txt";
+		File file = new File(fileName);
+		FileReader fileReader = new FileReader(file);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		String text = bufferedReader.readLine();
+		bufferedReader.close();
+
+		return Double.parseDouble(text);
 	}
 
 }
