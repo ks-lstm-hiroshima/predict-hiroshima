@@ -41,6 +41,7 @@ public class DataSetting {
 
 	public double[][] data;
 	public HashMap<Integer, DataNormalize> colDnMap;
+	public String dt_str;
 
 	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
 			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed, boolean debug)
@@ -72,13 +73,14 @@ public class DataSetting {
 		List<Integer> timeColIndexes = List.of(25, 26);
 		int datetimeColIndex = 0;
 		int coDatetimeColIndex = 1;
-		Set<Integer> ammoniaColIndexes = Set.of(27,28);
+		Set<Integer> ammoniaColIndexes = Set.of(27, 28);
 
-		for(int i=0, findNum= 0; i<colIndexes.size(); i++){
-			if(ammoniaColIndexes.contains(colIndexes.get(i))){
+		for (int i = 0, findNum = 0; i < colIndexes.size(); i++) {
+			if (ammoniaColIndexes.contains(colIndexes.get(i))) {
 				findNum++;
-				if( findNum > 1 ){
-					throw new AssertionError("使用説明変数にアンモニア関連パラメータが重複して使用されています。" + colIndexes.get(this.ammoniaIndexInParams) + "番と" + colIndexes.get(i) + "番" );
+				if (findNum > 1) {
+					throw new AssertionError("使用説明変数にアンモニア関連パラメータが重複して使用されています。"
+							+ colIndexes.get(this.ammoniaIndexInParams) + "番と" + colIndexes.get(i) + "番");
 				}
 				this.ammoniaIndexInParams = i;
 			}
@@ -195,6 +197,8 @@ public class DataSetting {
 
 		this.predictOriginDataW = rds.getPredictOriginDataW();
 		this.predictOriginDataWT = rds.getPredictOriginDataWT();
+
+		this.dt_str = rds.nextDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
 	}
 
 	public int getDataTypeSize() {
@@ -276,6 +280,7 @@ class RealDataSetting {
 	private String[][] predictDatetimesWT;
 	private String[][] predictCoDatetimesWT;
 	public int dataNumForTest;
+	public LocalDateTime nextDT;
 
 	private List<Integer> colIndexes;
 	private HashMap<Integer, DataNormalize> colDnMap;
@@ -339,7 +344,7 @@ class RealDataSetting {
 					.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
 		}
 
-		LocalDateTime nextDT = ParseDateTime.getNextDT(nowDT, test_mode);
+		this.nextDT = ParseDateTime.getNextDT(nowDT, test_mode);
 
 		// 予測点に関して実時刻と論理時刻の差はない
 		pDateTimeWT.add(ParseDateTime.fTime(nextDT));
@@ -364,10 +369,14 @@ class RealDataSetting {
 			}
 		}
 		if (previousRecIndex >= rTimeRecs.size()) {
-			System.out.println("前の定刻レコードが見つかりませんでした。");
-			System.out.println("previousRecIndex = " + previousRecIndex);
-			System.out.println("rTimeRecs.size() = " + rTimeRecs.size());
-			System.exit(-999);
+			if (debug) {
+				System.out.println("前の定刻レコードが見つかりませんでした。");
+				System.out.println("previousRecIndex = " + previousRecIndex);
+				System.out.println("rTimeRecs.size() = " + rTimeRecs.size());
+			}
+
+			// System.exit(-999);
+			return;
 		}
 
 		if (debug) {

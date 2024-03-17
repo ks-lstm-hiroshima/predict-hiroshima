@@ -20,7 +20,11 @@ public class DataRealtimeCSV {
 		File dir = new File(network_path);
 		File[] files = dir.listFiles();
 
-		if (files != null) {
+		if (files == null) {
+			return -1;
+		} else if (files.length == 0) {
+			return -2;
+		} else {
 			for (int i = 0; i < files.length; i++) {
 				File file = files[i];
 				FileReader fileReader;
@@ -39,14 +43,14 @@ public class DataRealtimeCSV {
 					}
 				} catch (IOException e) {
 					System.out.println("Failed to open file. " + e.getMessage());
-					return -1;
+					return -3;
 				}
 
 				try {
 					bufferedReader.close();
 				} catch (IOException e) {
 					System.out.println("Failed to close file. " + e.getMessage());
-					return -2;
+					return -4;
 				}
 			}
 		}
