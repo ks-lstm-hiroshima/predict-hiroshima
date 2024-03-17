@@ -162,7 +162,7 @@ public class LSTM {
 				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
 		LSTM_Load.load(lstm);
 		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
-				minute);
+				ds.ammoniaIndexInParams, minute);
 		lstm.prev = new LSTM_PrevStatistics(windowSize, minute);
 
 		// -- predict start --
@@ -182,23 +182,25 @@ public class LSTM {
 			if (debug) {
 				System.out.println("--- Ammonia Process Start ---");
 			}
-			NormalNormalize nn = (NormalNormalize) ds.colDnMap.get(18);
+			NormalNormalize nn = (NormalNormalize) ds.colDnMap.get(ds.ammoniaIndexInParams);
 
 			for (int i = windowSize - 1; i >= 0; i--) {
 				if (i >= lstm.prev.prev_ammonia.size()) {
 					continue;
 				}
 
-				ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18] = nn
-						.inv(input.z_train[input.z_train.length - 1][18]);
+				ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1
+						- i][ds.ammoniaIndexInParams] = nn
+								.inv(input.z_train[input.z_train.length - 1][ds.ammoniaIndexInParams]);
 
 				if (debug) {
 					System.out.print("[Prev index: ");
 					System.out.print(i);
 					System.out.print("] NP : ");
-					System.out.print(input.z_train[input.z_train.length - 1][18]);
+					System.out.print(input.z_train[input.z_train.length - 1][ds.ammoniaIndexInParams]);
 					System.out.print(" -> inv: ");
-					System.out.println(ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1 - i][18]);
+					System.out.println(ds.predictOriginDataW[ds.predictOriginDataW.length - 1][windowSize - 1
+							- i][ds.ammoniaIndexInParams]);
 				}
 			}
 

@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DataSetting {
 	public int inputSize;
@@ -20,6 +21,7 @@ public class DataSetting {
 	public int windowSize;
 	public int nakajiaIndexInTargets;
 	public int[] targetIndexes;
+	public int ammoniaIndexInParams;
 	public ArrayList<NormalNormalize> targetDnList;
 	public int allDataSize;
 	public int allDataSize_window;
@@ -70,6 +72,17 @@ public class DataSetting {
 		List<Integer> timeColIndexes = List.of(25, 26);
 		int datetimeColIndex = 0;
 		int coDatetimeColIndex = 1;
+		Set<Integer> ammoniaColIndexes = Set.of(27,28);
+
+		for(int i=0, findNum= 0; i<colIndexes.size(); i++){
+			if(ammoniaColIndexes.contains(colIndexes.get(i))){
+				findNum++;
+				if( findNum > 1 ){
+					throw new AssertionError("使用説明変数にアンモニア関連パラメータが重複して使用されています。" + colIndexes.get(this.ammoniaIndexInParams) + "番と" + colIndexes.get(i) + "番" );
+				}
+				this.ammoniaIndexInParams = i;
+			}
+		}
 
 		this.nakajiaIndexInTargets = targetColIndexes.indexOf(nakajiaColIndex);
 
