@@ -33,6 +33,9 @@ public class LSTM {
 	public double[][] origin_z_target;
 	public LSTM_PrevStatistics prev;
 
+	public String dt_str;
+	public int dataSize;
+
 	public void setData(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
 			String[] z_coDatetimes, boolean incident, double[][] origin_z_train, double[][] origin_z_target) {
 		this.z_train = z_train;
@@ -87,7 +90,11 @@ public class LSTM {
 
 		String network_path = network_settings.getProperty("RealtimePath_MIN01");
 		DataRealtimeCSV csv = new DataRealtimeCSV(network_path);
-		csv.setListCSV();
+		boolean incident = false;
+
+		if (csv.setListCSV() < 0) {
+			incident = true;
+		}
 
 		String fileName = "setting/setting_";
 		String minute = "";
@@ -160,6 +167,15 @@ public class LSTM {
 		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize,
 				ds.targetIndexes[ds.nakajiaIndexInTargets],
 				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
+		lstm.incident = incident;
+
+		if (incident) {
+			lstm.dt_str = ds.dt_str;
+			lstm.dataSize = inDataSize;
+			LSTM_Test.test(lstm);
+			return;
+		}
+
 		LSTM_Load.load(lstm);
 		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
 				ds.ammoniaIndexInParams, minute);

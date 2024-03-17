@@ -51,6 +51,16 @@ public class LSTM_Output {
 	//	public double PredictSquaredError2; // 補正二乗誤差
 	//	public double per2; // 補正%誤差
 
+	public LSTM_Output(boolean incident, String z_coDatetime, String minute, int dataSize) {
+		this.z_coDatetime = z_coDatetime;
+		this.incident = incident;
+		this.minute = minute;
+		this.input = new double[dataSize];
+		this.origin_input = new double[dataSize];
+
+		setInputPath();
+	}
+
 	public LSTM_Output(String z_coDatetime, String z_datetime, boolean onJudge, boolean z_flag, double inv_p,
 			double inv_t, double e, double PredictSquaredError, double per, double e2, double PredictSquaredError2,
 			double per2, double next, boolean incident, String minute, double[] input, double[] origin_input) {

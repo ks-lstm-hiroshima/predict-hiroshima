@@ -2,6 +2,15 @@ package jp.knowlsat.lstm.predict;
 
 public class LSTM_Test {
 	public static void test(LSTM lstm) {
+		if (lstm.incident) {
+			LSTM_Output output = new LSTM_Output(lstm.incident, lstm.dt_str, lstm.minute, lstm.dataSize);
+			output.print();
+			output.outputInputCSV();
+			output.outputStatisticsCSV();
+
+			return;
+		}
+
 		double[][][] out = new double[lstm.Layers][lstm.window][lstm.nHidden];
 
 		for (int i = 0; i < lstm.Layers; i++) {
