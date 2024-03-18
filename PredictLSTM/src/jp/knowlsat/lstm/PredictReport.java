@@ -21,7 +21,7 @@ public class PredictReport {
 	}
 
 	public static int generateStatistics(String date_str) {
-		String fileName = "AllRecord_" + date_str + ".csv";
+		String fileName = "AllRecords_" + date_str + ".csv";
 		Path path = Path.of(ReportPath + fileName);
 
 		File file;
