@@ -54,15 +54,17 @@ public class PredictReport {
 		}
 
 		try {
-			fileWriter.write(getHeader(lastFiles.get(0)));
-			fileWriter.write("\n");
-
-			for (int i = 0; i < lastFiles.size(); i++) {
-				fileWriter.write(getRecords(lastFiles.get(i)));
+			if (lastFiles.size() != 0) {
+				fileWriter.write(getHeader(lastFiles.get(0)));
 				fileWriter.write("\n");
-			}
 
-			fileWriter.flush();
+				for (int i = 0; i < lastFiles.size(); i++) {
+					fileWriter.write(getRecords(lastFiles.get(i)));
+					fileWriter.write("\n");
+				}
+
+				fileWriter.flush();
+			}
 		} catch (IOException e) {
 			System.out.println("Failed to write. " + e.getMessage());
 		}
