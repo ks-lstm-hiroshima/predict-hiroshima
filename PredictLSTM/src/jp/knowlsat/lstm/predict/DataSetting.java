@@ -198,7 +198,7 @@ public class DataSetting {
 		this.predictOriginDataW = rds.getPredictOriginDataW();
 		this.predictOriginDataWT = rds.getPredictOriginDataWT();
 
-		this.dt_str = rds.nextDT.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
+		this.dt_str = ParseDateTime.fTime(rds.nextDT);
 	}
 
 	public int getDataTypeSize() {
