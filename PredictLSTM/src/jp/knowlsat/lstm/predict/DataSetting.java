@@ -326,7 +326,8 @@ class RealDataSetting {
 		int dtColIndex = this.learningDataColToCol.get(Integer.valueOf(datetimeColIndex));
 
 		LocalDateTime nowDT = LocalDateTime.now();
-		nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
+		// nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
+		nowDT = LocalDateTime.of(2023, 11, 10, 23, 45, nowDT.getSecond(), nowDT.getNano());
 
 		if (passed != 0) {
 			nowDT = nowDT.minusHours(passed);
@@ -388,7 +389,12 @@ class RealDataSetting {
 
 		ArrayList<RecSource> recSources = new ArrayList<>(windowSize + 1);
 
+		if (debug) {
+			System.out.println(rTimeRecs.size());
+		}
+
 		// 同じ時刻のレコードの重複や、レコードの欠損があるので、レコードのインデックスとズレた分数(ふんすう)は一致しない事がある。
+		/*
 		for (int wIndex = 0; wIndex <= windowSize; wIndex++) {
 			for (int i = previousRecIndex; i < rTimeRecs.size(); i++) {
 				String[] curOrgRec = rTimeRecs.get(i);
@@ -409,6 +415,27 @@ class RealDataSetting {
 					break;
 				}
 			}
+		}
+		*/
+		for (int wIndex = 0; wIndex <= windowSize; wIndex++) {
+			int i = previousRecIndex;
+
+			while (new ParseDateTime(rTimeRecs.get(i)[dtColIndex]).gt(curCoDT)) {
+				i++;
+			}
+
+			while (this.isIrregularRec(rTimeRecs.get(i))) {
+				i++;
+			}
+
+			if (debug) {
+				System.out.println("aaa");
+			}
+
+			recSources.add(new RecSource(new ParseDateTime(rTimeRecs.get(i)[dtColIndex]), rTimeRecs.get(i),
+					ParseDateTime.fTime(curCoDT), i));
+			curCoDT = curCoDT.minusHours(1L);
+			previousRecIndex = i;
 		}
 
 		// 過去の実時刻と論理時刻を文字列で保持
@@ -626,6 +653,7 @@ class RealDataSetting {
 		// ↑↑↑↑  簡易テストコード  ↑↑↑↑
 	}
 
+	@SuppressWarnings("unused")
 	private boolean isNormalRec(String[] orgRec) {
 		for (Integer col : this.colIndexes) {
 			if (this.learningDataColToCol.containsKey(col)) {
@@ -636,6 +664,42 @@ class RealDataSetting {
 			}
 		}
 		return true;
+	}
+
+	private boolean isIrregularRec(String[] orgRec) {
+		// 流入処理水量（FI6001）
+		// 100 m3/h未満の点を削除
+		// 上記は適用外
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(8)]) < 100.0) {
+			return false;
+		}
+
+		// 中次亜塩実注入率（PLC31_PAR_AI0083）
+		// 0.45 mg/L未満または2.50 mg/Lより大きい点を削除（中次亜注入率の範囲0.45～2.50 mg/L）
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(15)]) < 0.45 ||
+				Double.parseDouble(orgRec[this.learningDataColToCol.get(15)]) > 2.50) {
+			return true;
+		}
+
+		// 沈殿水アルカリ度（AI1003）
+		// 5 mg/L未満の点を削除
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(20)]) < 5.0) {
+			return true;
+		}
+
+		// 気温（TI1007）
+		// -10℃未満の点を削除
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(13)]) < -10.0) {
+			return true;
+		}
+
+		// 原水温度（TI1002）
+		// 0℃未満の点を削除
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(16)]) < 0.0) {
+			return true;
+		}
+
+		return false;
 	}
 
 	int getPredictDataSize() {
@@ -691,8 +755,14 @@ class ParseDateTime {
 		String[] datetimeParts = this.sepDT(datetime);
 		String date = datetimeParts[0];
 		String time = datetimeParts[1];
+		String[] dateParts;
 
-		String[] dateParts = this.sepD01(date);
+		if (date.contains("/")) {
+			dateParts = this.sepD02(date);
+		} else {
+			dateParts = this.sepD01(date);
+		}
+
 		this.sYear = dateParts[0];
 		this.sMonth = dateParts[1];
 		this.sDay = dateParts[2];
@@ -722,7 +792,6 @@ class ParseDateTime {
 		return dateParts;
 	}
 
-	@SuppressWarnings("unused")
 	private String[] sepD02(String date) {
 		String[] dateParts = date.split("/");
 		return dateParts;
@@ -735,6 +804,14 @@ class ParseDateTime {
 
 	public boolean le(LocalDateTime ldt) {
 		return this.datetime.isBefore(ldt) || this.datetime.isEqual(ldt);
+	}
+
+	public boolean lt(LocalDateTime ldt) {
+		return this.datetime.isBefore(ldt);
+	}
+
+	public boolean ge(LocalDateTime ldt) {
+		return this.datetime.isAfter(ldt) || this.datetime.isEqual(ldt);
 	}
 
 	public boolean gt(LocalDateTime ldt) {
