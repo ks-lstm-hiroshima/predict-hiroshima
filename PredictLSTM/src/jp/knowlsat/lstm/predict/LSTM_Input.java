@@ -25,7 +25,6 @@ public class LSTM_Input {
 	public boolean[] z_flag;
 	public String[] z_datetimes;
 	public String[] z_coDatetimes;
-	public boolean incident;
 	public LSTM_Date lstm_date;
 
 	public LSTM_Input(int WindowSize, int DataType, int nOut, int targetIndex, int ammoniaIndex, String minute) {
@@ -44,13 +43,12 @@ public class LSTM_Input {
 	}
 
 	public int set(double[][] z_train, double[][] z_target, boolean[] z_flag, String[] z_datetimes,
-			String[] z_coDatetimes, boolean incident) {
+			String[] z_coDatetimes) {
 		this.z_train = z_train;
 		this.z_target = z_target;
 		this.z_flag = z_flag;
 		this.z_datetimes = z_datetimes;
 		this.z_coDatetimes = z_coDatetimes;
-		this.incident = incident;
 		String year = z_coDatetimes[WindowSize - 1].substring(0, 4);
 		String month = z_coDatetimes[WindowSize - 1].substring(5, 7);
 		String day = z_coDatetimes[WindowSize - 1].substring(8, 10);

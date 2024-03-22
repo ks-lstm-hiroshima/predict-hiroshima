@@ -162,9 +162,70 @@ public class PredictReport {
 
 		try {
 			if (dr.result.size() != 0) {
-				summaryFileWriter.write("予測総数：" + dr.result.size() + "\n");
-				summaryFileWriter.write("平均二乗誤差：" + dr.total_squareError / dr.result.size() + "\n");
-				summaryFileWriter.write("平均パーセント誤差：" + dr.total_per / dr.result.size() + "\n");
+				summaryFileWriter.write("取水中における予測総数："
+						+ dr.on_count + "\n");
+				summaryFileWriter.write("取水中における平均二乗誤差："
+						+ dr.on_total_squareError / dr.on_count + "\n");
+				summaryFileWriter.write("取水中における平均パーセント誤差："
+						+ dr.on_total_per / dr.on_count + "\n");
+				summaryFileWriter.write("\n");
+
+				summaryFileWriter.write("取水中の取水停止判断除外における予測総数："
+						+ dr.on_except_count + "\n");
+				summaryFileWriter.write("取水中の取水停止判断除外における平均二乗誤差："
+						+ dr.on_except_total_squareError / dr.on_except_count + "\n");
+				summaryFileWriter.write("取水中の取水停止判断除外における平均パーセント誤差："
+						+ dr.on_except_total_per / dr.on_except_count + "\n");
+				summaryFileWriter.write("\n");
+
+				summaryFileWriter.write("取水判断ミス除外における予測総数："
+						+ dr.except_count + "\n");
+				summaryFileWriter.write("取水判断ミス除外における平均二乗誤差："
+						+ dr.except_total_squareError / dr.except_count + "\n");
+				summaryFileWriter.write("取水判断ミス除外における平均パーセント誤差："
+						+ dr.except_total_per / dr.except_count + "\n");
+				summaryFileWriter.write("\n");
+
+				summaryFileWriter.write("全予測総数："
+						+ dr.result.size() + "\n");
+				summaryFileWriter.write("全平均二乗誤差："
+						+ dr.total_squareError / dr.result.size() + "\n");
+				summaryFileWriter.write("全平均パーセント誤差："
+						+ dr.total_per / dr.result.size() + "\n");
+				summaryFileWriter.write("\n");
+
+				summaryFileWriter.write("※取水中の取水停止判断数：" + dr.error_off_count
+						+ " -> （誤判断数） × （パーセント誤差：-100%）のペナルティ\n");
+				summaryFileWriter.write("※取水停止中の取水判断数：" + dr.error_on_count
+						+ " -> （誤判断数） × （パーセント誤差：+100%）のペナルティ\n");
+				summaryFileWriter.write("\n");
+
+				summaryFileWriter.write("予測誤差10%以内の割合："
+						+ (double) dr.per10_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差9%以内の割合："
+						+ (double) dr.per9_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差8%以内の割合："
+						+ (double) dr.per8_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差7%以内の割合："
+						+ (double) dr.per7_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差6%以内の割合："
+						+ (double) dr.per6_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差5%以内の割合："
+						+ (double) dr.per5_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差4%以内の割合："
+						+ (double) dr.per4_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差3%以内の割合："
+						+ (double) dr.per3_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差2%以内の割合："
+						+ (double) dr.per2_count / dr.result.size() + "\n");
+				summaryFileWriter.write("予測誤差1%以内の割合："
+						+ (double) dr.per1_count / dr.result.size() + "\n");
+				summaryFileWriter.write("\n");
+
+				summaryFileWriter.write("正の方向への誤差が発生した割合："
+						+ (double) dr.per_plus_count / dr.result.size() + "\n");
+				summaryFileWriter.write("負の方向への誤差が発生した割合："
+						+ (double) dr.per_minus_count / dr.result.size() + "\n");
 
 				summaryFileWriter.flush();
 			}
@@ -355,6 +416,30 @@ public class PredictReport {
 		public ArrayList<String[]> result;
 		public double total_squareError = 0.0;
 		public double total_per = 0.0;
+		public int on_count = 0;
+		public double on_total_squareError = 0.0;
+		public double on_total_per = 0.0;
+		public int except_count = 0;
+		public double except_total_squareError = 0.0;
+		public double except_total_per = 0.0;
+		public int on_except_count = 0;
+		public double on_except_total_squareError = 0.0;
+		public double on_except_total_per = 0.0;
+		public int error_on_count = 0;
+		public int error_off_count = 0;
+
+		public int per10_count = 0;
+		public int per9_count = 0;
+		public int per8_count = 0;
+		public int per7_count = 0;
+		public int per6_count = 0;
+		public int per5_count = 0;
+		public int per4_count = 0;
+		public int per3_count = 0;
+		public int per2_count = 0;
+		public int per1_count = 0;
+		public int per_plus_count = 0;
+		public int per_minus_count = 0;
 
 		public ArrayList<String[]> csv;
 		public File report;
@@ -439,20 +524,32 @@ public class PredictReport {
 					String realString = realHash.get(key);
 					double predict;
 					double real;
-					double error;
-					double squareError;
-					double per;
+					double error = 0.0;
+					double squareError = 0.0;
+					double per = 0.0;
 
 					if (realString != null && !realString.isEmpty()
-							&& !itemArray[itemArray.length - 1].equals(true)
-					/* && Double.parseDouble(itemArray[6]) > 0.5 */) {
+							&& !itemArray[itemArray.length - 1].equals("true")) {
 						predict = Double.parseDouble(predictString);
 						real = Double.parseDouble(realString);
-						error = predict - real;
-						squareError = error * error;
-						per = 0.0;
 
-						if (real != 0.0) {
+						if (real == 0.0 && predict == 0.0) {
+							error = 0.0;
+							squareError = 0.0;
+							per = 0.0;
+						} else if (real == 0.0) {
+							error = predict - real;
+							squareError = error * error;
+							per = 100.0;
+							error_on_count++;
+						} else if (predict == 0.0) {
+							error = predict - real;
+							squareError = error * error;
+							per = -100.0;
+							error_off_count++;
+						} else {
+							error = predict - real;
+							squareError = error * error;
 							per = (predict - real) * 100.0 / real;
 						}
 
@@ -462,6 +559,70 @@ public class PredictReport {
 
 						total_squareError += squareError;
 						total_per += Math.abs(per);
+
+						if (Math.abs(per) < 10.0) {
+							per10_count++;
+						}
+
+						if (Math.abs(per) < 9.0) {
+							per9_count++;
+						}
+
+						if (Math.abs(per) < 8.0) {
+							per8_count++;
+						}
+
+						if (Math.abs(per) < 7.0) {
+							per7_count++;
+						}
+
+						if (Math.abs(per) < 6.0) {
+							per6_count++;
+						}
+
+						if (Math.abs(per) < 5.0) {
+							per5_count++;
+						}
+
+						if (Math.abs(per) < 4.0) {
+							per4_count++;
+						}
+
+						if (Math.abs(per) < 3.0) {
+							per3_count++;
+						}
+
+						if (Math.abs(per) < 2.0) {
+							per2_count++;
+						}
+
+						if (Math.abs(per) < 1.0) {
+							per1_count++;
+						}
+
+						if (per > 0.0) {
+							per_plus_count++;
+						} else if (per < 0.0) {
+							per_minus_count++;
+						}
+
+						if (real != 0.0) {
+							on_count++;
+							on_total_squareError += squareError;
+							on_total_per += Math.abs(per);
+						}
+
+						if (!(real != 0.0 && predict == 0.0) && !(real == 0.0 && predict != 0.0)) {
+							except_count++;
+							except_total_squareError += squareError;
+							except_total_per += Math.abs(per);
+						}
+
+						if (real != 0.0 && !(real != 0.0 && predict == 0.0) && !(real == 0.0 && predict != 0.0)) {
+							on_except_count++;
+							on_except_total_squareError += squareError;
+							on_except_total_per += Math.abs(per);
+						}
 					}
 				}
 			} catch (IOException e) {

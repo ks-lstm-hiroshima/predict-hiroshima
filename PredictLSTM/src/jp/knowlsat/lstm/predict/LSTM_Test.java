@@ -2,7 +2,7 @@ package jp.knowlsat.lstm.predict;
 
 public class LSTM_Test {
 	public static void test(LSTM lstm) {
-		if (lstm.incident) {
+		if (lstm.stop) {
 			LSTM_Output output = new LSTM_Output(lstm.incident, lstm.dt_str, lstm.minute, lstm.dataSize);
 			output.print();
 			output.outputInputCSV();
