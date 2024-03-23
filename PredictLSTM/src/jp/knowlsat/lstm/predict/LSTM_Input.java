@@ -155,7 +155,6 @@ public class LSTM_Input {
 
 				z_train[WindowSize - 1 + offset][targetIndex] = Double.parseDouble(items[1]); // 正規化中次亜予測値を格納
 				z_train[WindowSize - 1 + offset][this.ammoniaIndex] = Double.parseDouble(items[3]); // 正規化アンモニアを格納
-				z_flag[WindowSize - 1 + offset] = Boolean.parseBoolean(items[2]); // 取水状態フラグを格納
 
 				try {
 					bufferedReader.close();

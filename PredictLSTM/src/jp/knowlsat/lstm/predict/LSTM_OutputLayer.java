@@ -49,7 +49,7 @@ public class LSTM_OutputLayer {
 			next = 0.0;
 		}
 
-		double inv_p = this.ds.targetDnList.get(ds.nakajiaIndexInTargets).inv(p[1]);
+		double inv_p = this.ds.targetDnList.get(ds.nakajiaIndexInTargets).inv(next);
 		double inv_t = this.ds.targetDnList.get(ds.nakajiaIndexInTargets).inv(t[1]);
 
 		double per;

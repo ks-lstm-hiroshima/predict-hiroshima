@@ -565,20 +565,6 @@ class RealDataSetting {
 		orgColToArray.put(Integer.valueOf(27), AMMONIUM1001_aList);
 
 		// 2024/03/22 add start
-		// 8:FI6001 がパラメータに採用されていれば。
-		ArrayList<Double> FI6001_aList = new ArrayList<>(windowSize);
-		if (colIndexes.contains(8)) {
-			int FI6001_OrgCol = this.learningDataColToCol.get(8);
-			for (int i = 0; i < windowSize; i++) {
-				int rowIndex = recSources.get(i).recIndex;
-				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[FI6001_OrgCol]);
-				FI6001_aList.add(
-						val >= 100.0D ? val : 0.0);
-			}
-		}
-		Collections.reverse(FI6001_aList);
-		orgColToArray.put(Integer.valueOf(8), FI6001_aList);
-
 		// 15:PLC31_PAR_AI0083 がパラメータに採用されていれば。
 		ArrayList<Double> AI0083_aList = new ArrayList<>(windowSize);
 		if (colIndexes.contains(15)) {
@@ -590,12 +576,34 @@ class RealDataSetting {
 				if (val > 2.5) {
 					val = 2.5;
 				} else if (val < 0.45) {
-					val = 0.0;
+					val = 0.45;
 				}
 
 				AI0083_aList.add(val);
 			}
 		}
+		// 下記の8:FI6001パラメータと連携のためここでは処理しない
+		// Collections.reverse(AI0083_aList);
+		// orgColToArray.put(Integer.valueOf(15), AI0083_aList);
+
+		// 8:FI6001 がパラメータに採用されていれば。
+		ArrayList<Double> FI6001_aList = new ArrayList<>(windowSize);
+		if (colIndexes.contains(8)) {
+			int FI6001_OrgCol = this.learningDataColToCol.get(8);
+			for (int i = 0; i < windowSize; i++) {
+				int rowIndex = recSources.get(i).recIndex;
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[FI6001_OrgCol]);
+
+				if (val >= 100.0D) {
+					FI6001_aList.add(val);
+				} else {
+					FI6001_aList.add(0.0);
+					AI0083_aList.set(i, 0.0);
+				}
+			}
+		}
+		Collections.reverse(FI6001_aList);
+		orgColToArray.put(Integer.valueOf(8), FI6001_aList);
 		Collections.reverse(AI0083_aList);
 		orgColToArray.put(Integer.valueOf(15), AI0083_aList);
 
