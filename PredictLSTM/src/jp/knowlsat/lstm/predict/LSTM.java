@@ -148,11 +148,11 @@ public class LSTM {
 		int elu_mode = Integer.parseInt(settings.getProperty("elu_mode"));
 
 		boolean debug = false;
-		int Sep4Base = 1632;
+		int Sep4Base = 0;
 		int passed = Sep4Base;
 		int test_size = 1; // not changed
 		int last = passed;
-		boolean all = true;
+		boolean all = false;
 
 		if (all) {
 			last = 0;
