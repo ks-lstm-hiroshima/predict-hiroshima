@@ -99,18 +99,22 @@ public class LSTM_Output {
 
 	public void setError() {
 		if (prev_z_coDatetime != null) {
-			if (!z_flag) {
+			if (prev_real_nakajia == 0.0 && prev_inv_p == 0.0) {
 				prev_e = 0.0;
 				prev_PredictSquaredError = 0.0;
 				prev_per = 0.0;
-			} else if (prev_real_nakajia != 0.0) {
-				prev_e = prev_inv_p - prev_real_nakajia;
-				prev_PredictSquaredError = prev_e * prev_e;
-				prev_per = (prev_inv_p - prev_real_nakajia) * 100.0 / prev_real_nakajia;
-			} else {
+			} else if (prev_real_nakajia == 0.0) {
 				prev_e = prev_inv_p - prev_real_nakajia;
 				prev_PredictSquaredError = prev_e * prev_e;
 				prev_per = 100.0;
+			} else if (prev_inv_p == 0.0) {
+				prev_e = prev_inv_p - prev_real_nakajia;
+				prev_PredictSquaredError = prev_e * prev_e;
+				prev_per = -100.0;
+			} else {
+				prev_e = prev_inv_p - prev_real_nakajia;
+				prev_PredictSquaredError = prev_e * prev_e;
+				prev_per = (prev_inv_p - prev_real_nakajia) * 100.0 / prev_real_nakajia;
 			}
 		} else {
 			prev_e = 0.0;

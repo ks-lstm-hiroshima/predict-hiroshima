@@ -22,6 +22,7 @@ public class LSTM {
 	public String[] z_datetimes;
 	public String[] z_coDatetimes;
 	public boolean incident;
+	public boolean stop;
 
 	public int targetIndex;
 	public double STATE_THRESHOLD;
@@ -90,10 +91,8 @@ public class LSTM {
 
 		String network_path = network_settings.getProperty("RealtimePath_MIN01");
 		DataRealtimeCSV csv = new DataRealtimeCSV(network_path);
-		boolean incident = false;
 
 		if (csv.setListCSV() < 0) {
-			incident = true;
 		}
 
 		String fileName = "setting/setting_";
@@ -143,46 +142,61 @@ public class LSTM {
 		double STATE_THRESHOLD = Double.parseDouble(settings.getProperty("STATE_THRESHOLD"));
 		int test_mode = Integer.parseInt(settings.getProperty("test_mode"));
 		int windowSize = Integer.parseInt(settings.getProperty("windowSize"));
-
-		boolean debug = false;
-		int passed = 0;
-		int test_size = 1; // not changed
-
-		ArrayList<String[]> rTimeRecs = csv.getListCSV();
-		DataSetting ds = null;
-		try {
-			ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, test_size,
-					rTimeRecs, passed, debug);
-		} catch (IOException e) {
-			System.out.println(e.toString());
-			System.exit(-1);
-		}
-		int dataType = ds.getDataTypeSize();
-		int inDataSize = dataType;
 		int nHidden = Integer.parseInt(settings.getProperty("nHidden"));
 		int Layers = Integer.parseInt(settings.getProperty("Layers"));
 		int peephole_mode = Integer.parseInt(settings.getProperty("peephole_mode"));
 		int elu_mode = Integer.parseInt(settings.getProperty("elu_mode"));
 
-		LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize,
-				ds.targetIndexes[ds.nakajiaIndexInTargets],
-				peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
-		lstm.incident = incident;
+		boolean debug = false;
+		int Sep4Base = 1632;
+		int passed = Sep4Base;
+		int test_size = 1; // not changed
+		int last = passed;
+		boolean all = true;
 
-		if (incident) {
-			lstm.dt_str = ds.dt_str;
-			lstm.dataSize = inDataSize;
-			LSTM_Test.test(lstm);
-			return;
+		if (all) {
+			last = 0;
 		}
 
-		LSTM_Load.load(lstm);
-		LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize, ds.targetIndexes[ds.nakajiaIndexInTargets],
-				ds.ammoniaIndexInParams, minute);
-		lstm.prev = new LSTM_PrevStatistics(windowSize, minute);
+		ArrayList<String[]> rTimeRecs = csv.getListCSV();
 
-		// -- predict start --
-		for (int test_index = passed; test_index > passed - test_size; test_index--) {
+		for (int loop = passed; loop >= last; loop--) {
+			DataSetting ds = null;
+
+			try {
+				ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, test_size,
+						rTimeRecs, loop, debug);
+			} catch (IOException e) {
+				System.out.println(e.toString());
+				System.exit(-1);
+			}
+
+			int dataType = ds.getDataTypeSize();
+			int inDataSize = dataType;
+
+			LSTM lstm = new LSTM(Layers, windowSize, inDataSize, nHidden, outDataSize,
+					ds.targetIndexes[ds.nakajiaIndexInTargets],
+					peephole_mode, elu_mode, STATE_THRESHOLD, ds, test_size, test_mode, ammonia_mode, minute);
+
+			if (ds.stop) {
+				lstm.stop = true;
+				lstm.incident = true;
+				lstm.dt_str = ds.dt_str;
+				lstm.dataSize = inDataSize;
+				LSTM_Test.test(lstm);
+				return;
+			}
+
+			if (LSTM_Load.load(lstm) < 0) {
+				return;
+			}
+
+			LSTM_Input input = new LSTM_Input(windowSize, dataType, outDataSize,
+					ds.targetIndexes[ds.nakajiaIndexInTargets],
+					ds.ammoniaIndexInParams, minute);
+			lstm.prev = new LSTM_PrevStatistics(windowSize, minute);
+
+			// -- predict start --
 			DataMinibatch dm = new DataMinibatch(ds, test_size, windowSize, dataType,
 					ds.targetIndexes[ds.nakajiaIndexInTargets], outDataSize, 0);
 
@@ -191,7 +205,7 @@ public class LSTM {
 
 			input.set(dm.z_train[dm.z_train.length - 1], dm.z_target[dm.z_target.length - 1],
 					dm.z_flag[dm.z_flag.length - 1], dm.z_datetimes[dm.z_datetimes.length - 1],
-					dm.z_coDatetimes[dm.z_coDatetimes.length - 1], false);
+					dm.z_coDatetimes[dm.z_coDatetimes.length - 1]);
 			input.allLoad();
 
 			// アンモニア処理追加 start
@@ -226,11 +240,11 @@ public class LSTM {
 			// アンモニア処理追加 end
 
 			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
-					input.incident, ds.predictOriginDataW[ds.predictOriginDataW.length - 1],
+					ds.incident_l2, ds.predictOriginDataW[ds.predictOriginDataW.length - 1],
 					ds.predictOriginDataWT[ds.predictOriginDataWT.length - 1]);
 			LSTM_Test.test(lstm);
+			// -- predict end --
 		}
-		// -- predict end --
 	}
 
 }

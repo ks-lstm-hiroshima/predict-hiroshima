@@ -42,11 +42,16 @@ public class DataSetting {
 	public double[][] data;
 	public HashMap<Integer, DataNormalize> colDnMap;
 	public String dt_str;
+	public boolean incident_l1;
+	public boolean incident_l2;
+	public boolean stop;
 
 	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
 			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed, boolean debug)
 			throws IOException {
-
+		this.incident_l1 = false;
+		this.incident_l2 = false;
+		this.stop = false;
 		this.inputSize = inputSize;
 		this.outputSize = outputSize;
 		this.windowSize = window;
@@ -199,6 +204,9 @@ public class DataSetting {
 		this.predictOriginDataWT = rds.getPredictOriginDataWT();
 
 		this.dt_str = ParseDateTime.fTime(rds.nextDT);
+		this.incident_l1 = rds.incident_l1;
+		this.incident_l2 = rds.incident_l2;
+		this.stop = rds.stop;
 	}
 
 	public int getDataTypeSize() {
@@ -281,6 +289,9 @@ class RealDataSetting {
 	private String[][] predictCoDatetimesWT;
 	public int dataNumForTest;
 	public LocalDateTime nextDT;
+	public boolean incident_l1;
+	public boolean incident_l2;
+	public boolean stop;
 
 	private List<Integer> colIndexes;
 	private HashMap<Integer, DataNormalize> colDnMap;
@@ -309,6 +320,10 @@ class RealDataSetting {
 			List<Integer> timeColIndexes, int datetimeColIndex, List<Integer> targetColIndexes,
 			HashMap<Integer, DataNormalize> colDnMap, int windowSize, int dataNumForTest,
 			int passed, boolean debug) {
+		this.stop = false;
+		this.incident_l1 = false;
+		this.incident_l2 = false;
+
 		this.colIndexes = colIndexes;
 		this.colDnMap = colDnMap;
 
@@ -326,7 +341,8 @@ class RealDataSetting {
 		int dtColIndex = this.learningDataColToCol.get(Integer.valueOf(datetimeColIndex));
 
 		LocalDateTime nowDT = LocalDateTime.now();
-		nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
+		// nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
+		nowDT = LocalDateTime.of(2023, 11, 10, 23, 45, nowDT.getSecond(), nowDT.getNano());
 
 		if (passed != 0) {
 			nowDT = nowDT.minusHours(passed);
@@ -375,6 +391,10 @@ class RealDataSetting {
 				System.out.println("rTimeRecs.size() = " + rTimeRecs.size());
 			}
 
+			stop = true;
+			incident_l1 = true;
+			incident_l2 = true;
+
 			// System.exit(-999);
 			return;
 		}
@@ -389,6 +409,7 @@ class RealDataSetting {
 		ArrayList<RecSource> recSources = new ArrayList<>(windowSize + 1);
 
 		// 同じ時刻のレコードの重複や、レコードの欠損があるので、レコードのインデックスとズレた分数(ふんすう)は一致しない事がある。
+		/*
 		for (int wIndex = 0; wIndex <= windowSize; wIndex++) {
 			for (int i = previousRecIndex; i < rTimeRecs.size(); i++) {
 				String[] curOrgRec = rTimeRecs.get(i);
@@ -409,6 +430,34 @@ class RealDataSetting {
 					break;
 				}
 			}
+		}
+		*/
+
+		this.incident_l1 = false;
+		this.incident_l2 = false;
+		boolean first = true;
+
+		for (int i = previousRecIndex, wIndex = 0; wIndex <= windowSize; wIndex++) {
+			while (new ParseDateTime(rTimeRecs.get(i)[dtColIndex]).gt(curCoDT)) {
+				i++;
+			}
+
+			while (this.isIrregularRec(rTimeRecs.get(i))) {
+				if (first) {
+					incident_l1 = true;
+				}
+
+				incident_l2 = true;
+				i++;
+			}
+
+			if (first) {
+				first = false;
+			}
+
+			recSources.add(new RecSource(new ParseDateTime(rTimeRecs.get(i)[dtColIndex]),
+					rTimeRecs.get(i), ParseDateTime.fTime(curCoDT), i));
+			curCoDT = curCoDT.minusHours(1L);
 		}
 
 		// 過去の実時刻と論理時刻を文字列で保持
@@ -514,6 +563,106 @@ class RealDataSetting {
 		}
 		Collections.reverse(AMMONIUM1001_aList); // 固定値の場合は不要な処理
 		orgColToArray.put(Integer.valueOf(27), AMMONIUM1001_aList);
+
+		// 2024/03/22 add start
+		// 15:PLC31_PAR_AI0083 がパラメータに採用されていれば。
+		ArrayList<Double> AI0083_aList = new ArrayList<>(windowSize);
+		if (colIndexes.contains(15)) {
+			int AI0083_OrgCol = this.learningDataColToCol.get(15);
+			for (int i = 0; i < windowSize; i++) {
+				int rowIndex = recSources.get(i).recIndex;
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[AI0083_OrgCol]);
+
+				if (val > 2.5) {
+					val = 2.5;
+				} else if (val < 0.45) {
+					val = 0.45;
+				}
+
+				AI0083_aList.add(val);
+			}
+		}
+		// 下記の8:FI6001パラメータと連携のためここでは処理しない
+		// Collections.reverse(AI0083_aList);
+		// orgColToArray.put(Integer.valueOf(15), AI0083_aList);
+
+		// 8:FI6001 がパラメータに採用されていれば。
+		ArrayList<Double> FI6001_aList = new ArrayList<>(windowSize);
+		if (colIndexes.contains(8)) {
+			int FI6001_OrgCol = this.learningDataColToCol.get(8);
+			for (int i = 0; i < windowSize; i++) {
+				int rowIndex = recSources.get(i).recIndex;
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[FI6001_OrgCol]);
+
+				if (val >= 100.0D) {
+					FI6001_aList.add(val);
+				} else {
+					FI6001_aList.add(0.0);
+					AI0083_aList.set(i, 0.0);
+				}
+			}
+		}
+		Collections.reverse(FI6001_aList);
+		orgColToArray.put(Integer.valueOf(8), FI6001_aList);
+		Collections.reverse(AI0083_aList);
+		orgColToArray.put(Integer.valueOf(15), AI0083_aList);
+
+		/*
+		// 20:AI1003 がパラメータに採用されていれば。
+		ArrayList<Double> AI1003_aList = new ArrayList<>(windowSize);
+		if (colIndexes.contains(15)) {
+			int AI1003_OrgCol = this.learningDataColToCol.get(20);
+			for (int i = 0; i < windowSize; i++) {
+				int rowIndex = recSources.get(i).recIndex;
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[AI1003_OrgCol]);
+		
+				if (val < 5.0) {
+					val = 5.0;
+				}
+		
+				AI1003_aList.add(val);
+			}
+		}
+		Collections.reverse(AI1003_aList);
+		orgColToArray.put(Integer.valueOf(20), AI1003_aList);
+		
+		// 13:TI1007 がパラメータに採用されていれば。
+		ArrayList<Double> TI1007_aList = new ArrayList<>(windowSize);
+		if (colIndexes.contains(13)) {
+			int TI1007_OrgCol = this.learningDataColToCol.get(13);
+			for (int i = 0; i < windowSize; i++) {
+				int rowIndex = recSources.get(i).recIndex;
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[TI1007_OrgCol]);
+		
+				if (val < -10.0) {
+					val = -10.0;
+				}
+		
+				TI1007_aList.add(val);
+			}
+		}
+		Collections.reverse(TI1007_aList);
+		orgColToArray.put(Integer.valueOf(13), TI1007_aList);
+		
+		// 16:TI1002 がパラメータに採用されていれば。
+		ArrayList<Double> TI1002_aList = new ArrayList<>(windowSize);
+		if (colIndexes.contains(16)) {
+			int TI1002_OrgCol = this.learningDataColToCol.get(16);
+			for (int i = 0; i < windowSize; i++) {
+				int rowIndex = recSources.get(i).recIndex;
+				double val = Double.parseDouble(rTimeRecs.get(rowIndex)[TI1002_OrgCol]);
+		
+				if (val < 0.0) {
+					val = 0.0;
+				}
+		
+				TI1002_aList.add(val);
+			}
+		}
+		Collections.reverse(TI1002_aList);
+		orgColToArray.put(Integer.valueOf(16), TI1002_aList);
+		// 2024/03/22 add end
+		*/
 
 		this.predictOriginDataW = new double[this.dataNumForTest][windowSize][colIndexes.size()];
 		this.predictDataW = new double[this.dataNumForTest][windowSize][colIndexes.size()];
@@ -626,6 +775,7 @@ class RealDataSetting {
 		// ↑↑↑↑  簡易テストコード  ↑↑↑↑
 	}
 
+	@SuppressWarnings("unused")
 	private boolean isNormalRec(String[] orgRec) {
 		for (Integer col : this.colIndexes) {
 			if (this.learningDataColToCol.containsKey(col)) {
@@ -636,6 +786,47 @@ class RealDataSetting {
 			}
 		}
 		return true;
+	}
+
+	private boolean isIrregularRec(String[] orgRec) {
+		// 流入処理水量（FI6001）
+		// 100 m3/h未満の点を削除
+		// 上記は適用外
+		/*
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(8)]) < 100.0) {
+			return true;
+		}
+		*/
+
+		// 中次亜塩実注入率（PLC31_PAR_AI0083）
+		// 0.45 mg/L未満または2.50 mg/Lより大きい点を削除（中次亜注入率の範囲0.45～2.50 mg/L）
+		// 上記は適用外
+		/*
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(15)]) < 0.45 ||
+				Double.parseDouble(orgRec[this.learningDataColToCol.get(15)]) > 2.50) {
+			return true;
+		}
+		*/
+
+		// 沈殿水アルカリ度（AI1003）
+		// 5 mg/L未満の点を削除
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(20)]) < 5.0) {
+			return true;
+		}
+
+		// 気温（TI1007）
+		// -10℃未満の点を削除
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(13)]) < -10.0) {
+			return true;
+		}
+
+		// 原水温度（TI1002）
+		// 0℃未満の点を削除
+		if (Double.parseDouble(orgRec[this.learningDataColToCol.get(16)]) < 0.0) {
+			return true;
+		}
+
+		return false;
 	}
 
 	int getPredictDataSize() {
@@ -691,8 +882,14 @@ class ParseDateTime {
 		String[] datetimeParts = this.sepDT(datetime);
 		String date = datetimeParts[0];
 		String time = datetimeParts[1];
+		String[] dateParts;
 
-		String[] dateParts = this.sepD01(date);
+		if (date.contains("/")) {
+			dateParts = this.sepD02(date);
+		} else {
+			dateParts = this.sepD01(date);
+		}
+
 		this.sYear = dateParts[0];
 		this.sMonth = dateParts[1];
 		this.sDay = dateParts[2];
@@ -722,7 +919,6 @@ class ParseDateTime {
 		return dateParts;
 	}
 
-	@SuppressWarnings("unused")
 	private String[] sepD02(String date) {
 		String[] dateParts = date.split("/");
 		return dateParts;
@@ -735,6 +931,14 @@ class ParseDateTime {
 
 	public boolean le(LocalDateTime ldt) {
 		return this.datetime.isBefore(ldt) || this.datetime.isEqual(ldt);
+	}
+
+	public boolean lt(LocalDateTime ldt) {
+		return this.datetime.isBefore(ldt);
+	}
+
+	public boolean ge(LocalDateTime ldt) {
+		return this.datetime.isAfter(ldt) || this.datetime.isEqual(ldt);
 	}
 
 	public boolean gt(LocalDateTime ldt) {

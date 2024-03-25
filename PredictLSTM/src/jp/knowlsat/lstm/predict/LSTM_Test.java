@@ -2,7 +2,7 @@ package jp.knowlsat.lstm.predict;
 
 public class LSTM_Test {
 	public static void test(LSTM lstm) {
-		if (lstm.incident) {
+		if (lstm.stop) {
 			LSTM_Output output = new LSTM_Output(lstm.incident, lstm.dt_str, lstm.minute, lstm.dataSize);
 			output.print();
 			output.outputInputCSV();
@@ -34,7 +34,9 @@ public class LSTM_Test {
 		}
 
 		LSTM_Output output = lstm.outputLayer.test(out[lstm.Layers - 1][lstm.window - 1],
-				lstm.z_target[lstm.window - 1], lstm.z_flag[lstm.window - 1], lstm.STATE_THRESHOLD,
+				lstm.z_target[lstm.window - 1], lstm.z_flag[lstm.window - 1],
+				// 取水中の取水停止誤判断のペナルティは大きいのでスレッショルドを低下
+				lstm.STATE_THRESHOLD * (2.0 / 3.0),
 				lstm.z_datetimes[lstm.window - 1], lstm.z_coDatetimes[lstm.window - 1],
 				lstm.incident, lstm.minute, lstm.z_train, lstm.origin_z_train);
 
