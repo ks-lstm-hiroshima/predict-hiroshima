@@ -159,13 +159,7 @@ public class LSTM_Output {
 		System.out.println();
 		System.out.print(z_coDatetime);
 		System.out.print(",");
-
-		if (Math.abs(inv_p) < 0.1) {
-			System.out.print(e3(inv_p));
-		} else {
-			System.out.print(f3(inv_p));
-		}
-
+		System.out.print(tp(inv_p));
 		System.out.print(",");
 		System.out.print(incident);
 		System.out.println();
@@ -182,13 +176,7 @@ public class LSTM_Output {
 			System.out.println();
 			System.out.print(prev_z_coDatetime);
 			System.out.print(",");
-
-			if (Math.abs(prev_inv_p) < 0.1) {
-				System.out.print(e3(prev_inv_p));
-			} else {
-				System.out.print(f3(prev_inv_p));
-			}
-
+			System.out.print(tp(prev_inv_p));
 			System.out.print(",");
 			System.out.print(prev_incident);
 			System.out.println();
@@ -208,35 +196,13 @@ public class LSTM_Output {
 		System.out.print("％誤差");
 		System.out.println();
 
-		if (Math.abs(prev_real_nakajia) < 0.1) {
-			System.out.print(e3(prev_real_nakajia));
-		} else {
-			System.out.print(f3(prev_real_nakajia));
-		}
-
+		System.out.print(tp(prev_real_nakajia));
 		System.out.print(",");
-
-		if (Math.abs(prev_e) < 0.1) {
-			System.out.print(e3(prev_e));
-		} else {
-			System.out.print(f3(prev_e));
-		}
-
+		System.out.print(tp(prev_e));
 		System.out.print(",");
-
-		if (Math.abs(prev_PredictSquaredError) < 0.1) {
-			System.out.print(e3(prev_PredictSquaredError));
-		} else {
-			System.out.print(f3(prev_PredictSquaredError));
-		}
-
+		System.out.print(tp(prev_PredictSquaredError));
 		System.out.print(",");
-
-		if (Math.abs(prev_per) < 0.1) {
-			System.out.print(e3(prev_per));
-		} else {
-			System.out.print(f3(prev_per));
-		}
+		System.out.print(tp(prev_per));
 
 		System.out.println();
 		System.out.println();
@@ -408,6 +374,18 @@ public class LSTM_Output {
 		bufferedReader.close();
 
 		return Double.parseDouble(text);
+	}
+
+	public static String tp(double d) {
+		String value_str = "0.0";
+
+		if (d == 0.0) {
+		} else if (Math.abs(d) < 0.1) {
+			value_str = e3(d);
+		} else {
+			value_str = f3(d);
+		}
+		return value_str;
 	}
 
 	public static String e3(double d) {
