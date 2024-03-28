@@ -153,24 +153,21 @@ public class LSTM {
 
 		boolean debug = false;
 		boolean isDevelopEnv = false;
-		int configHour = 0;
+		String configHourStr = "0";
 		boolean all = false;
 		if (Files.exists(devEnvFile) && (!Files.isDirectory(devEnvFile)) && Files.isReadable(devEnvFile)) {
 			try {
-				String configHourStr = Files.readString(devEnvFile);
-				/* 9月4日基準 2023/11/10 終日　までのデータがある状態で configHour=1632 に設定すると学習データから後ろのテストデータ50日分をテストできる */
+				configHourStr = Files.readString(devEnvFile);
+				/* 9月4日基準 2023/11/10 終日　までのデータがある状態で configHour=1632 に設定すると学習データから後ろのテストデータ64日分をテストできる */
 				/* 上記は1時間間隔予測モデルの場合 */
-				/*
-				configHour = Integer.parseInt(configHourStr);
 				all = true;
-				*/
 				isDevelopEnv = true;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println(e.toString());
+				System.exit(-1);
 			}
 		}
-		int passed = configHour;
+		int passed = Integer.parseInt(configHourStr);
 		int test_size = 1; // not changed
 		int last = passed;
 
