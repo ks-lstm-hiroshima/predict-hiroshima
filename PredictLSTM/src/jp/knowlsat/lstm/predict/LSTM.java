@@ -257,7 +257,7 @@ public class LSTM {
 			// アンモニア処理追加 end
 
 			lstm.setData(input.z_train, input.z_target, input.z_flag, input.z_datetimes, input.z_coDatetimes,
-					ds.incident_l2, ds.predictOriginDataW[ds.predictOriginDataW.length - 1],
+					ds.incident_l0, ds.predictOriginDataW[ds.predictOriginDataW.length - 1],
 					ds.predictOriginDataWT[ds.predictOriginDataWT.length - 1]);
 			LSTM_Test.test(lstm);
 			// -- predict end --

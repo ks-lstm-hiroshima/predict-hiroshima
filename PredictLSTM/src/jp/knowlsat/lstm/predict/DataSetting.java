@@ -42,6 +42,7 @@ public class DataSetting {
 	public double[][] data;
 	public HashMap<Integer, DataNormalize> colDnMap;
 	public String dt_str;
+	public boolean incident_l0;
 	public boolean incident_l1;
 	public boolean incident_l2;
 	public boolean stop;
@@ -204,6 +205,7 @@ public class DataSetting {
 		this.predictOriginDataWT = rds.getPredictOriginDataWT();
 
 		this.dt_str = ParseDateTime.fTime(rds.nextDT);
+		this.incident_l0 = rds.incident_l0;
 		this.incident_l1 = rds.incident_l1;
 		this.incident_l2 = rds.incident_l2;
 		this.stop = rds.stop;
@@ -289,6 +291,7 @@ class RealDataSetting {
 	private String[][] predictCoDatetimesWT;
 	public int dataNumForTest;
 	public LocalDateTime nextDT;
+	public boolean incident_l0;
 	public boolean incident_l1;
 	public boolean incident_l2;
 	public boolean stop;
@@ -370,10 +373,18 @@ class RealDataSetting {
 
 		LocalDateTime firstCoDT = nextDT.minusHours(1L);
 		LocalDateTime curCoDT = nextDT.minusHours(1L);
+		this.incident_l0 = false;
+
+		// SCADAの最新レコードが予測時刻の1時間前よりも古ければインシデントレベル0
+		// 上記は正確な予測が不可能なため
+		if (new ParseDateTime(rTimeRecs.get(0)[dtColIndex]).lt(firstCoDT)) {
+			incident_l0 = true;
+		}
 
 		int previousRecIndex = 0;
 		String dtStr;
 		ParseDateTime parsedDT = null;
+
 		for (; previousRecIndex < rTimeRecs.size(); previousRecIndex++) {
 			dtStr = rTimeRecs.get(previousRecIndex)[dtColIndex];
 			parsedDT = new ParseDateTime(dtStr);
@@ -394,6 +405,7 @@ class RealDataSetting {
 			}
 
 			stop = true;
+			incident_l0 = true;
 			incident_l1 = true;
 			incident_l2 = true;
 
