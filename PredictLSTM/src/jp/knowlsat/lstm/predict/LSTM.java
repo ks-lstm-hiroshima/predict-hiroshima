@@ -3,6 +3,9 @@ package jp.knowlsat.lstm.predict;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -72,6 +75,7 @@ public class LSTM {
 
 	public static void main(String[] args) {
 		String networkFileName = "setting/setting_network.properties";
+		Path devEnvFile = Paths.get("setting/develop_config_on.switch");
 		FileInputStream nin = null;
 		try {
 			nin = new FileInputStream(networkFileName);
@@ -148,11 +152,28 @@ public class LSTM {
 		int elu_mode = Integer.parseInt(settings.getProperty("elu_mode"));
 
 		boolean debug = false;
+		boolean isDevelopEnv = false;
 		int Sep4Base = 0;
+		boolean all = false;
+		if (Files.exists(devEnvFile) && (!Files.isDirectory(devEnvFile)) && Files.isReadable(devEnvFile)) {
+			String isEnvFileNum;
+			try {
+				isEnvFileNum = Files.readString(devEnvFile);
+				if (isEnvFileNum.endsWith("999")) {
+					/*
+					Sep4Base = 1632;
+					all = true;
+					*/
+					isDevelopEnv = true;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		int passed = Sep4Base;
 		int test_size = 1; // not changed
 		int last = passed;
-		boolean all = false;
 
 		if (all) {
 			last = 0;
@@ -165,7 +186,7 @@ public class LSTM {
 
 			try {
 				ds = new DataSetting(inputSeries, outDataSize, windowSize, test_mode, KSPP, ammonia_mode, test_size,
-						rTimeRecs, loop, debug);
+						rTimeRecs, loop, debug, isDevelopEnv);
 			} catch (IOException e) {
 				System.out.println(e.toString());
 				System.exit(-1);

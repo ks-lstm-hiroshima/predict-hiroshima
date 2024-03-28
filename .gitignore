@@ -32,3 +32,6 @@ PredictLSTM/.classpath
 PredictLSTM/.gitignore
 PredictLSTM/.project
 .project
+
+# File indicating that this is the development environment
+PredictLSTM/setting/develop_config_on.switch
