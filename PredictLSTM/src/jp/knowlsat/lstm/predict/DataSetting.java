@@ -47,7 +47,7 @@ public class DataSetting {
 	public boolean stop;
 
 	public DataSetting(int inputSize, int outputSize, int window, int test_mode, double KSPP, int ammonia_mode,
-			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed, boolean debug)
+			int dataNumForTest, ArrayList<String[]> rTimeRecs, int passed, boolean debug, boolean isDevelopEnv)
 			throws IOException {
 		this.incident_l1 = false;
 		this.incident_l2 = false;
@@ -191,7 +191,7 @@ public class DataSetting {
 		}
 
 		RealDataSetting rds = new RealDataSetting(rTimeRecs, test_mode, colIndexes, timeColIndexes, datetimeColIndex,
-				targetColIndexes, colDnMap, this.windowSize, dataNumForTest, passed, debug);
+				targetColIndexes, colDnMap, this.windowSize, dataNumForTest, passed, debug, isDevelopEnv);
 
 		this.predictDataSize = rds.getPredictDataSize();
 		this.predictDataSize_window = rds.getPredictDataSize_window();
@@ -319,7 +319,7 @@ class RealDataSetting {
 	RealDataSetting(ArrayList<String[]> rTimeRecs, int test_mode, List<Integer> colIndexes,
 			List<Integer> timeColIndexes, int datetimeColIndex, List<Integer> targetColIndexes,
 			HashMap<Integer, DataNormalize> colDnMap, int windowSize, int dataNumForTest,
-			int passed, boolean debug) {
+			int passed, boolean debug, boolean isDevelopEnv) {
 		this.stop = false;
 		this.incident_l1 = false;
 		this.incident_l2 = false;
@@ -341,8 +341,10 @@ class RealDataSetting {
 		int dtColIndex = this.learningDataColToCol.get(Integer.valueOf(datetimeColIndex));
 
 		LocalDateTime nowDT = LocalDateTime.now();
-		// nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
-		nowDT = LocalDateTime.of(2023, 11, 10, 23, 45, nowDT.getSecond(), nowDT.getNano());
+		if (isDevelopEnv) {
+			// nowDT = LocalDateTime.of(2023, 9, 3, 22, 45, nowDT.getSecond(), nowDT.getNano());
+			nowDT = LocalDateTime.of(2023, 11, 10, 23, 45, nowDT.getSecond(), nowDT.getNano());
+		}
 
 		if (passed != 0) {
 			nowDT = nowDT.minusHours(passed);
