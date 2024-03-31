@@ -1,8 +1,8 @@
 # Compiled class file
 *.class
 
-# Log file
-*.log
+# Err log dir
+PredictLSTM/err_log/*
 
 # BlueJ files
 *.ctxt
@@ -22,3 +22,16 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Pleades Project Files
+.metadata/*
+Servers/*
+
+# Files what created by Eclipse
+PredictLSTM/.classpath
+PredictLSTM/.gitignore
+PredictLSTM/.project
+.project
+
+# File indicating that this is the development environment
+PredictLSTM/setting/develop_config_on.switch
