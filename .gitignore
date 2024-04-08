@@ -2,7 +2,7 @@
 *.class
 
 # Err log dir
-PredictLSTM/err_log/*
+predict-hiroshima/err_log/*
 
 # BlueJ files
 *.ctxt
@@ -28,10 +28,10 @@ replay_pid*
 Servers/*
 
 # Files what created by Eclipse
-PredictLSTM/.classpath
-PredictLSTM/.gitignore
-PredictLSTM/.project
+predict-hiroshima/.classpath
+predict-hiroshima/.gitignore
+predict-hiroshima/.project
 .project
 
 # File indicating that this is the development environment
-PredictLSTM/setting/develop_config_on.switch
+predict-hiroshima/setting/develop_config_on.switch
