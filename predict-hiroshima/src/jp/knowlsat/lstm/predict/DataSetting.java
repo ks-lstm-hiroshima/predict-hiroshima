@@ -377,7 +377,7 @@ class RealDataSetting {
 
 		// SCADAの最新レコードが予測時刻の1時間前よりも古ければインシデントレベル0
 		// 上記は正確な予測が不可能なため
-		if (new ParseDateTime(rTimeRecs.get(0)[dtColIndex]).lt(firstCoDT)) {
+		if (rTimeRecs.size() == 0 || new ParseDateTime(rTimeRecs.get(0)[dtColIndex]).lt(firstCoDT)) {
 			incident_l0 = true;
 		}
 
