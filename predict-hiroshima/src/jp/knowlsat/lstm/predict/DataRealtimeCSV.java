@@ -25,7 +25,11 @@ public class DataRealtimeCSV {
 		} else if (files.length == 0) {
 			return -2;
 		} else {
-			for (int i = 0; i < files.length; i++) {
+			int start = files.length -32;
+			if( start < 0){
+				start = 0;
+			}
+			for (int i = start; i < files.length; i++) {
 				File file = files[i];
 				FileReader fileReader;
 				BufferedReader bufferedReader;
